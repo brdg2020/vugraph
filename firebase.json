@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "site": "bricskor",
+    "public": "public",
+    "cleanUrls": true,
+    "ignore": ["firebase.json", "**/.*"],
+    "headers": [
+      { "source": "**", "headers": [ { "key": "X-Robots-Tag", "value": "noindex, nofollow" } ] },
+      { "source": "/data/**", "headers": [ { "key": "Cache-Control", "value": "public, max-age=300" } ] },
+      { "source": "**/*.@(js|css)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=600" } ] }
+    ],
+    "rewrites": [ { "source": "**", "destination": "/index.html" } ]
+  }
+}
