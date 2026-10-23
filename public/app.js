@@ -182,7 +182,7 @@ async function bindSearch() {
 async function viewClub(club, q) {
   const info = (await getJSON('/data/clubs.json')).find(c => c.slug === club);
   const idx = await getJSON(`/data/${club}/index.json`);
-  setTitle(`${idx.name} skorları – turnuva sonuçları`);
+  setTitle(`${idx.name} Skorları – Güncel Turnuva Sonuçları`);
   const months = [...new Set(idx.events.map(e => e.date?.slice(0, 7)).filter(Boolean))].sort().reverse();
   const ym = q.get('ay') || months[0] || new Date().toISOString().slice(0, 7);
   const [Y, M] = ym.split('-').map(Number);
