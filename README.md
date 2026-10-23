@@ -21,15 +21,25 @@ Briç kulüplerinin turnuva sonuçlarını yayımlayan site — https://skor.bri
 
 ## Veri üretme
 
+Kulüpler `tools/clubs.json` içinde tanımlı (`index: true` olanlar Google'a açık). Her kulübün vugraph ham verisi `raw/` klasöründe (git'e girmez).
+
 ```bash
 # DDS'i yerel olarak derle (bir kez)
 git clone --depth 1 https://github.com/dds-bridge/dds.git /tmp/dds
+mkdir -p /tmp/ddsbuild
 g++ -std=c++20 -O2 -fPIC -shared -I /tmp/dds/library/src -I /tmp/dds/library/src/api $(find /tmp/dds/library/src -name "*.cpp") -o /tmp/ddsbuild/libdds.so -lpthread
 g++ -std=c++20 -O2 -I /tmp/dds/library/src tools/ddrun.cpp -L/tmp/ddsbuild -ldds -Wl,-rpath,/tmp/ddsbuild -o /tmp/ddsbuild/ddrun
 
-# ham veriden site verisi üret
-DDRUN=/tmp/ddsbuild/ddrun python3 tools/build_data.py raw/bricskor_major_raw.json major "Major Boğaziçi Briç Spor Kulübü" public
+# tüm kulüplerin verisini üret, sonra arama motoru sayfalarını oluştur
+DDRUN=/tmp/ddsbuild/ddrun python3 tools/build_data.py tools/clubs.json public
+python3 tools/prerender.py public
 ```
+
+`prerender.py` her kulüp için `public/kulup/<kulüp>.html` (ör. "Major Boğaziçi Briç Spor Kulübü Skorları"), her turnuva için `public/kulup/<kulüp>/<turnuva>.html`, ayrıca `index.html`, `app.html` (diğer yollar, noindex), `sitemap.xml` ve `robots.txt` üretir. Sayfalar JavaScript olmadan da sıralamayı gösterir; JavaScript yüklenince uygulama devralır.
+
+### Günlük güncelleme
+
+Her kulüp için günde bir kez, **17:15 (İstanbul)**'te vugraph kontrol edilir; yeni turnuva varsa çekilir, veri ve sayfalar yeniden üretilip yayımlanır.
 
 ## Yerel test ve yayın
 
@@ -40,7 +50,7 @@ firebase deploy --only hosting --project bricskor
 
 Firebase: `erdembridge1@gmail.com` hesabı, proje `bricskor`, alan adı `skor.bricdersi.net` (Squarespace DNS'te CNAME `skor` → `bricskor.web.app`).
 
-Site şu an `noindex` (Google'a kapalı). Yayına açarken `public/index.html` içindeki robots etiketi, `public/robots.txt` ve `firebase.json` içindeki `X-Robots-Tag` başlığı kaldırılmalı.
+Kulüp ve turnuva sayfaları Google'a açık; el, oyuncu ve gömülü (`/embed`) sayfalar `noindex`. Yayından sonra `sitemap.xml` Google Search Console'a gönderilmeli.
 
 ## Lisans notu
 

@@ -138,46 +138,51 @@ function namesHtml(p, link = true) {
 // ---------- views
 async function viewHome() {
   setTitle('');
-  const idx = await getJSON('/data/major/index.json');
-  const last = idx.events.slice(0, 8);
+  const clubs = await getJSON('/data/clubs.json');
+  const latest = clubs.filter(c => c.last).map(c => ({ ...c.last, club: c.slug, clubShort: c.short || c.name })).sort((x, y) => ((y.date || '') + (y.time || '')).localeCompare((x.date || '') + (x.time || ''))).slice(0, 10);
   $app.innerHTML = `
     <h1>Kulüp turnuva sonuçları</h1>
     <p class="sub">Sıralama, eller, double dummy ve atak analizi, eli tekrar oynama. Telefonda da rahat.</p>
-    <input class="search" id="q" placeholder="Oyuncu ara… (ör. Sema Erkut)" autocomplete="off">
+    <input class="search" id="q" placeholder="İsim arayın" autocomplete="off">
     <div class="card results-list" id="qres" hidden></div>
     <h2>Kulüpler</h2>
-    <div class="clubs">${CLUBS.map(c => `<a class="card club" href="${L('/kulup/' + c.slug)}" data-link><div class="nm">${esc(c.name)}</div><div class="meta">${esc(c.city)} · ${idx.events.length} turnuva</div></a>`).join('')}
+    <div class="clubs">${clubs.map(c => `<a class="card club" href="${L('/kulup/' + c.slug)}" data-link><div class="nm">${esc(c.name)}</div><div class="meta">${esc(c.city || '')} · ${c.events} turnuva${c.last ? ' · son: ' + fmtDate(c.last.date) : ''}</div></a>`).join('')}
       <div class="card club soon"><div class="nm">Kulübünüzü ekleyin</div><div class="meta">Sonuçlarınızı briçskor'da yayımlayın — kurulum gerektirmez.</div></div>
     </div>
     <h2>Son turnuvalar</h2>
-    <div class="card evlist">${last.map(e => evRow('major', e)).join('')}</div>`;
+    <div class="card evlist">${latest.map(e => evRow(e.club, e, e.clubShort)).join('')}</div>`;
   bindSearch();
 }
-function evRow(club, e) {
+function evRow(club, e, clubLabel) {
   const [y, m, d] = (e.date || '---').split('-');
   return `<a class="ev" href="${L(`/kulup/${club}/${e.slug}`)}" data-link>
     <div class="dt"><div class="d">${+d || ''}</div><div class="m">${MON3[+m - 1] || ''}</div></div>
-    <div><div class="nm">${esc(e.name)}</div><div class="meta">${e.date ? dowOf(e.date) : ''} ${e.time || ''} · ${e.pairs} çift · ${e.boards} el</div></div>
+    <div><div class="nm">${esc(e.name)}</div><div class="meta">${clubLabel ? esc(clubLabel) + ' · ' : ''}${e.date ? dowOf(e.date) : ''} ${e.time || ''} · ${e.pairs} çift · ${e.boards} el</div></div>
     <div class="win">1. <b>${esc((e.winner || []).join(' – '))}</b><br>%${fmtPct(e.winnerPct)}</div></a>`;
 }
 async function bindSearch() {
   const q = document.getElementById('q'), out = document.getElementById('qres');
   if (!q) return;
-  const players = await getJSON('/data/players.json');
-  const norm = s => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
+  const [players, clubs] = await Promise.all([getJSON('/data/players.json'), getJSON('/data/clubs.json')]);
+  const norm = s => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
   q.addEventListener('input', () => {
     const v = norm(q.value.trim());
     if (v.length < 2) { out.hidden = true; return; }
+    const ch = clubs.filter(c => [c.name, c.short, ...(c.aliases || [])].filter(Boolean).some(x => norm(x).includes(v)));
     const hits = players.filter(p => norm(p[1]).includes(v)).slice(0, 12);
     out.hidden = false;
-    out.innerHTML = hits.length ? hits.map(p => `<a href="${L('/oyuncu/' + p[0])}" data-link><span>${esc(p[1])}</span><span class="muted">${p[2]} turnuva</span></a>`).join('') : '<div class="empty">Sonuç yok</div>';
+    out.innerHTML = (ch.length || hits.length)
+      ? ch.map(c => `<a href="${L('/kulup/' + c.slug)}" data-link><span><b>${esc(c.name)}</b></span><span class="muted">kulüp · ${c.events} turnuva</span></a>`).join('')
+        + hits.map(p => `<a href="${L('/oyuncu/' + p[0])}" data-link><span>${esc(p[1])}</span><span class="muted">${p[2]} turnuva</span></a>`).join('')
+      : '<div class="empty">Sonuç yok</div>';
   });
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') { const first = out.querySelector('a'); if (first) navigate(first.getAttribute('href')); } });
 }
 
 async function viewClub(club, q) {
-  const info = CLUBS.find(c => c.slug === club);
+  const info = (await getJSON('/data/clubs.json')).find(c => c.slug === club);
   const idx = await getJSON(`/data/${club}/index.json`);
-  setTitle(`${idx.name} sonuçları`);
+  setTitle(`${idx.name} skorları – turnuva sonuçları`);
   const months = [...new Set(idx.events.map(e => e.date?.slice(0, 7)).filter(Boolean))].sort().reverse();
   const ym = q.get('ay') || months[0] || new Date().toISOString().slice(0, 7);
   const [Y, M] = ym.split('-').map(Number);
@@ -193,10 +198,23 @@ async function viewClub(club, q) {
   }
   const tail = (7 - (startDow + days) % 7) % 7; for (let i = 0; i < tail; i++) cells += '<div class="day out"></div>';
   const prev = months[months.indexOf(ym) + 1], next = months[months.indexOf(ym) - 1];
+  // son turnuvanın sıralaması doğrudan sayfanın başında
+  const lastE = idx.events[0];
+  let lastHtml = '';
+  if (lastE && !q.get('ay')) {
+    try {
+      const ev = await loadEvent(club, lastE.slug);
+      lastHtml = `<h2>Son turnuva: <a href="${L(`/kulup/${club}/${lastE.slug}`)}" data-link>${esc(ev.name)}</a> <span class="note">${fmtDate(ev.date)} ${ev.time || ''}</span></h2>
+        ${rankingHtml(ev).replace(/<p class="note">.*<\/p>$/s, '')}
+        <div class="row" style="margin:-4px 0 6px"><a class="btn sm primary" href="${L(`/kulup/${club}/${lastE.slug}/el/1`)}" data-link>Elleri gör ›</a><a class="btn sm" href="${L(`/kulup/${club}/${lastE.slug}?sekme=kartlar`)}" data-link>Skor kartları</a></div>`;
+    } catch { }
+  }
   $app.innerHTML = `
     ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›</div>`}
-    <h1>${esc(idx.name)}</h1>
+    <h1>${esc(idx.name)} skorları</h1>
     <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
+    ${lastHtml}
+    <h2>Turnuva takvimi</h2>
     <div class="card">
       <div class="cal-head">${prev ? `<a class="btn sm" href="${L(`/kulup/${club}?ay=${prev}`)}" data-link>‹</a>` : '<span></span>'}<b>${MONTHS[M - 1]} ${Y}</b>${next ? `<a class="btn sm" href="${L(`/kulup/${club}?ay=${next}`)}" data-link>›</a>` : '<span></span>'}</div>
       <div class="cal">${cells}</div>
@@ -506,7 +524,7 @@ async function viewPlayer(slug) {
 async function viewPlayers() {
   setTitle('Oyuncular');
   const players = await getJSON('/data/players.json');
-  $app.innerHTML = `<h1>Oyuncular</h1><p class="sub">${players.length} oyuncu</p><input class="search" id="q" placeholder="Oyuncu ara…" autocomplete="off"><div class="card results-list" id="qres" hidden></div>
+  $app.innerHTML = `<h1>Oyuncular</h1><p class="sub">${players.length} oyuncu</p><input class="search" id="q" placeholder="İsim arayın" autocomplete="off"><div class="card results-list" id="qres" hidden></div>
     <div class="card results-list" id="all">${players.map(p => `<a href="/oyuncu/${p[0]}" data-link><span>${esc(p[1])}</span><span class="muted">${p[2]}</span></a>`).join('')}</div>`;
   bindSearch();
   document.getElementById('q').addEventListener('input', e => document.getElementById('all').hidden = e.target.value.trim().length >= 2);

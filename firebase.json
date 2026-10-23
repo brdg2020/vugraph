@@ -3,12 +3,14 @@
     "site": "bricskor",
     "public": "public",
     "cleanUrls": true,
+    "trailingSlash": false,
     "ignore": ["firebase.json", "**/.*"],
     "headers": [
-      { "source": "**", "headers": [ { "key": "X-Robots-Tag", "value": "noindex, nofollow" } ] },
-      { "source": "/data/**", "headers": [ { "key": "Cache-Control", "value": "public, max-age=300" } ] },
-      { "source": "**/*.@(js|css)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=600" } ] }
+      { "source": "/data/**", "headers": [ { "key": "Cache-Control", "value": "public, max-age=300" }, { "key": "X-Robots-Tag", "value": "noindex" } ] },
+      { "source": "/embed/**", "headers": [ { "key": "X-Robots-Tag", "value": "noindex" } ] },
+      { "source": "**/*.@(js|css|wasm)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=600" } ] },
+      { "source": "**/*.html", "headers": [ { "key": "Cache-Control", "value": "public, max-age=300" } ] }
     ],
-    "rewrites": [ { "source": "**", "destination": "/index.html" } ]
+    "rewrites": [ { "source": "**", "destination": "/app.html" } ]
   }
 }

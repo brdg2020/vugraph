@@ -1,0 +1,8 @@
+[
+  {"slug": "major", "vugraph": "major", "name": "Major Boğaziçi Briç Spor Kulübü", "short": "Major Boğaziçi",
+   "city": "İstanbul · Levent", "site": "https://majorbogazici.com", "aliases": ["major", "majör", "major bogazici", "boğaziçi"],
+   "index": true, "raw": "raw/bricskor_major_raw.json", "hints": "raw/bricskor_major_hints.json"},
+  {"slug": "hosgoru", "vugraph": "hosgoru", "name": "Hoşgörü Briç Kulübü", "short": "Hoşgörü",
+   "city": "İstanbul · Kızıltoprak", "site": "https://hosgorubric.com", "aliases": ["hoşgörü", "hosgoru", "hoşgörü briç"],
+   "index": true, "raw": "raw/bricskor_hosgoru_raw.json", "hints": "raw/bricskor_hosgoru_hints.json"}
+]

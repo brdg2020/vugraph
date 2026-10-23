@@ -105,10 +105,13 @@ def run_dd(jobs):
 AMBIG = []
 
 
+PLAYERS = defaultdict(lambda: {"name": "", "events": []})
+
+
 def build(raw, club_slug, club_name, out_dir, raw_hints=None):
     events_out = []
     seen_slugs = set()
-    players = defaultdict(lambda: {"name": "", "events": []})
+    players = PLAYERS
     os.makedirs(f"{out_dir}/data/{club_slug}/t", exist_ok=True)
 
     for ev in sorted(raw.values(), key=lambda e: e["id"]):
@@ -285,6 +288,11 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
     events_out.sort(key=lambda e: (e["date"] or "", e["time"] or ""), reverse=True)
     with open(f"{out_dir}/data/{club_slug}/index.json", "w") as f:
         json.dump({"club": club_slug, "name": club_name, "events": events_out}, f, ensure_ascii=False)
+    return events_out
+
+
+def write_players(out_dir):
+    players = PLAYERS
     os.makedirs(f"{out_dir}/data/p", exist_ok=True)
     plist = []
     shards = defaultdict(dict)
@@ -298,15 +306,27 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
     plist.sort(key=lambda x: x[1])
     with open(f"{out_dir}/data/players.json", "w") as f:
         json.dump(plist, f, ensure_ascii=False, separators=(",", ":"))
-    return events_out
 
 
 if __name__ == "__main__":
-    raw = json.load(open(sys.argv[1]))
-    hints = json.load(open(sys.argv[5])) if len(sys.argv) > 5 and os.path.exists(sys.argv[5]) else None
-    evs = build(raw, sys.argv[2], sys.argv[3], sys.argv[4], hints)
+    # Kullanım: build_data.py tools/clubs.json public
+    cfg_path, out_dir = sys.argv[1], sys.argv[2]
+    base = os.path.dirname(os.path.abspath(cfg_path))
+    clubs = json.load(open(cfg_path))
+    meta = []
+    for c in clubs:
+        rp = os.path.join(base, "..", c["raw"]) if c.get("raw") else None
+        if not rp or not os.path.exists(rp):
+            print("veri yok, atlandı:", c["slug"]); continue
+        raw = json.load(open(rp))
+        hp = os.path.join(base, "..", c["hints"]) if c.get("hints") else None
+        hints = json.load(open(hp)) if hp and os.path.exists(hp) else None
+        evs = build(raw, c["slug"], c["name"], out_dir, hints)
+        print(c["slug"], len(evs), "turnuva")
+        meta.append({k: c.get(k) for k in ("slug", "name", "short", "city", "site", "aliases", "index")} |
+                    {"events": len(evs), "last": evs[0] if evs else None})
+    write_players(out_dir)
+    with open(f"{out_dir}/data/clubs.json", "w") as f:
+        json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
     json.dump(AMBIG, open("/tmp/ambig.json", "w"))
     print("belirsiz masa:", len(AMBIG))
-    print(len(evs), "events")
-    for e in evs:
-        print(e["date"], e["time"], e["name"], e["pairs"], "çift", e["boards"], "el")
