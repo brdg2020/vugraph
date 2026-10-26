@@ -1,0 +1,16 @@
+name: vugraph tanı
+on:
+  workflow_dispatch:
+    inputs:
+      kulup: { description: 'vugraph kulüp adı', required: true }
+      id: { description: 'turnuva kimliği', required: true }
+jobs:
+  tani:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm i --no-save --no-package-lock --no-audit --no-fund playwright-core@1.48.2
+      - run: node tools/debug_event.mjs "${{ github.event.inputs.kulup }}" "${{ github.event.inputs.id }}"
