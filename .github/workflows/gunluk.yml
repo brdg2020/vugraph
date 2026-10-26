@@ -9,6 +9,10 @@ on:
       months:
         description: 'Kaç aylık vugraph takvimi taransın'
         default: '2'
+      yayinla:
+        description: 'Değişiklik olmasa da Firebase’e yayımla'
+        type: boolean
+        default: false
 
 concurrency:
   group: gunluk
@@ -16,6 +20,7 @@ concurrency:
 
 permissions:
   contents: write
+  id-token: write   # Google'a anahtarsız giriş (Workload Identity Federation)
 
 jobs:
   guncelle:
@@ -84,12 +89,13 @@ jobs:
           git commit -q -m "Günlük güncelleme $(TZ=Europe/Istanbul date +%F) — ${{ steps.scrape.outputs.yeni }} yeni turnuva"
           git push
 
+      - name: Google'a anahtarsız giriş
+        if: steps.diff.outputs.var == '1' || inputs.yayinla
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/870574749780/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-deploy@bricskor.iam.gserviceaccount.com
+
       - name: Firebase'e yayımla
-        if: steps.diff.outputs.var == '1'
-        env:
-          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT_BRICSKOR }}
-        run: |
-          if [ -z "$SA" ]; then echo "::warning::FIREBASE_SERVICE_ACCOUNT secret yok, yayın atlandı"; exit 0; fi
-          echo "$SA" > /tmp/sa.json
-          GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json npx -y firebase-tools@13 deploy --only hosting --project bricskor --non-interactive
-          rm -f /tmp/sa.json
+        if: steps.diff.outputs.var == '1' || inputs.yayinla
+        run: npx -y firebase-tools@13 deploy --only hosting --project bricskor --non-interactive

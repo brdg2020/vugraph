@@ -49,7 +49,7 @@ python3 tools/prerender.py public
 
 Elle çalıştırmak için: Actions → "Günlük skor güncellemesi" → Run workflow.
 
-Yayın için repoda `FIREBASE_SERVICE_ACCOUNT` secret'ı gerekir (Firebase Hosting Admin yetkili servis hesabının JSON anahtarı). Yoksa iş veriyi üretip commit eder, yayını atlar.
+Yayın anahtarsızdır: GitHub, Google Cloud'daki `github` Workload Identity havuzu üzerinden `github-deploy@bricskor.iam.gserviceaccount.com` servis hesabı (Firebase Hosting Admin) kimliğine bürünür. Repoda secret gerekmez; havuz yalnızca `brdg2020/vugraph` reposunu kabul eder.
 
 Ağ erişimi olmayan bir ortamda elle güncelleme: tarayıcıda `tools/scrape.js` (clubs.vugraph.com üzerinde) ve `tools/tbf.js` (mp.tbricfed.org.tr üzerinde) çalıştırılır, indirilen dosyalar `update.py <dosya>` ve `tbf.py --from <dosya>` ile içe aktarılır.
 
