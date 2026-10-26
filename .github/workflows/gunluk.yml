@@ -28,10 +28,9 @@ jobs:
         with:
           node-version: 22
 
-      - name: Playwright (Chromium)
-        run: |
-          npm i --no-save --no-package-lock playwright@1.48.2
-          npx playwright install --with-deps chromium
+      - name: Playwright (runner'daki Google Chrome kullanılır, tarayıcı indirilmez)
+        run: npm i --no-save --no-package-lock --no-audit --no-fund playwright-core@1.48.2
+        timeout-minutes: 5
 
       - name: DDS önbelleği
         id: dds
@@ -50,6 +49,7 @@ jobs:
 
       - name: vugraph'tan yeni turnuvalar
         id: scrape
+        timeout-minutes: 60
         run: node tools/scrape_cli.mjs /tmp/update.json ${{ github.event.inputs.months || '2' }}
 
       - name: TBF MP sıralaması
@@ -77,7 +77,7 @@ jobs:
       - name: Firebase'e yayımla
         if: steps.diff.outputs.var == '1'
         env:
-          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT_BRICSKOR }}
         run: |
           if [ -z "$SA" ]; then echo "::warning::FIREBASE_SERVICE_ACCOUNT secret yok, yayın atlandı"; exit 0; fi
           echo "$SA" > /tmp/sa.json

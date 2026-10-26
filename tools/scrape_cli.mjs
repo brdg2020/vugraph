@@ -1,7 +1,8 @@
 // scrape.js'i başsız Chromium'da (Playwright) çalıştırır — GitHub Actions günlük güncellemesi için.
 // Kullanım: node tools/scrape_cli.mjs <çıktı.json> [ay sayısı=2]
 // Bilinen turnuvalar repodaki raw/ dosyalarından okunur; yalnızca yeni olanlar çekilir.
-import { chromium } from 'playwright';
+let chromium;
+try { ({ chromium } = await import('playwright')); } catch { ({ chromium } = await import('playwright-core')); }
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +17,7 @@ const skip = readJSON(skipP, {});
 const known = {};
 for (const c of clubs) known[c.vugraph] = [...Object.keys(readJSON(path.join(ROOT, c.raw), {})), ...(skip[c.vugraph] || [])];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.CHROME_CHANNEL === 'none' ? {} : { channel: process.env.CHROME_CHANNEL || 'chrome' }).catch(() => chromium.launch());
 const page = await browser.newPage();
 await page.goto(`https://clubs.vugraph.com/${clubs[0].vugraph}/calendar.php`, { timeout: 60000 });
 await page.addScriptTag({ content: fs.readFileSync(path.join(ROOT, 'tools', 'scrape.js'), 'utf8') });
