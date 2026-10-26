@@ -131,7 +131,9 @@ for c in clubs:
     idx = json.load(open(os.path.join(PUB, "data", slug, "index.json")))
     evs = idx["events"]
     body = (f'<div class="crumb"><a href="/">Kulüpler</a>›</div><h1 class="club-h">{e(name)} skorları</h1>'
-            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva</p>' + calendar(slug, evs)
+            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva</p>'
+            + (f'<nav class="tabs"><a class="on" href="/kulup/{slug}">Turnuvalar</a><a href="/kulup/{slug}/mp-siralamasi">MP sıralaması</a></nav>' if c.get("mp") else "")
+            + calendar(slug, evs)
             + '<details class="arsiv"><summary>Tüm turnuvalar</summary><div class="card evlist">'
             + "".join(ev_row(slug, x) for x in evs) + "</div></details>")
     short = c.get("short") or name
@@ -144,6 +146,22 @@ for c in clubs:
     write(f"kulup/{slug}.html", page(f"/kulup/{slug}", title, desc, body, index=bool(c.get("index")), jsonld=ld))
     if c.get("index"):
         urls.append((f"/kulup/{slug}", evs[0]["date"] if evs else today))
+    mp_p = os.path.join(PUB, "data", slug, "mp.json")
+    if c.get("mp") and os.path.exists(mp_p):  # TBF MP sıralaması
+        mp = json.load(open(mp_p))
+        trn = lambda s: " ".join(w[:1] + w[1:].replace("I", "ı").replace("İ", "i").lower() for w in str(s).split())
+        rows = "".join(f'<tr><td class="num">{r[0]}</td><td>{e(trn(r[2]))}<div class="note">{e(r[3])}</div></td>'
+                       f'<td class="num pct">{r[4]:.2f}</td></tr>' for r in mp["rows"][:300])
+        body = (f'<div class="crumb"><a href="/">Kulüpler</a>›<a href="/kulup/{slug}">{e(name)}</a>›</div>'
+                f'<h1 class="club-h">{e(name)} MP sıralaması</h1><p class="sub">TBF güncel masterpoint sıralaması · {len(mp["rows"])} sporcu</p>'
+                f'<nav class="tabs"><a href="/kulup/{slug}">Turnuvalar</a><a class="on" href="/kulup/{slug}/mp-siralamasi">MP sıralaması</a></nav>'
+                f'<div class="card tbl-wrap"><table class="t"><thead><tr><th class="num">Sıra</th><th>Sporcu</th><th class="num">Güncel MP</th></tr></thead><tbody>{rows}</tbody></table></div>'
+                f'<p class="note">{e(mp.get("explanation"))} Kaynak: Türkiye Briç Federasyonu.</p>')
+        short = c.get("short") or name
+        write(f"kulup/{slug}/mp-siralamasi.html", page(f"/kulup/{slug}/mp-siralamasi", f"{name} MP Sıralaması – TBF Güncel Masterpoint | briçskor",
+              f"{short} sporcularının Türkiye Briç Federasyonu güncel masterpoint (MP) sıralaması: {len(mp['rows'])} sporcu.", body, index=bool(c.get("index"))))
+        if c.get("index"):
+            urls.append((f"/kulup/{slug}/mp-siralamasi", (mp.get("at") or today)[:10]))
     for x in evs:
         ev = json.load(open(os.path.join(PUB, "data", slug, "t", x["slug"] + ".json")))
         body = (f'<div class="crumb"><a href="/">Kulüpler</a>›<a href="/kulup/{slug}">{e(name)}</a>›</div>'

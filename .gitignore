@@ -1,5 +1,8 @@
-raw/
-tools/.ddcache.json
+raw/*
+!raw/bricskor_*_raw.json
+!raw/bricskor_*_hints.json
+!raw/bricskor_*_mp.json
+!raw/bricskor_skip.json
 .firebase/
 node_modules/
 .DS_Store

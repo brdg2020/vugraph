@@ -1,0 +1,85 @@
+name: Günlük skor güncellemesi
+
+on:
+  schedule:
+    - cron: '15 14 * * *'   # 17:15 İstanbul
+    - cron: '40 20 * * *'   # 23:40 İstanbul (akşam turnuvaları)
+  workflow_dispatch:
+    inputs:
+      months:
+        description: 'Kaç aylık vugraph takvimi taransın'
+        default: '2'
+
+concurrency:
+  group: gunluk
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Playwright (Chromium)
+        run: |
+          npm i --no-save --no-package-lock playwright@1.48.2
+          npx playwright install --with-deps chromium
+
+      - name: DDS önbelleği
+        id: dds
+        uses: actions/cache@v4
+        with:
+          path: ~/ddsbuild
+          key: dds-${{ runner.os }}-${{ hashFiles('tools/ddrun.cpp') }}
+
+      - name: DDS derle
+        if: steps.dds.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/dds-bridge/dds.git /tmp/dds
+          mkdir -p ~/ddsbuild
+          g++ -std=c++20 -O2 -fPIC -shared -I /tmp/dds/library/src -I /tmp/dds/library/src/api $(find /tmp/dds/library/src -name "*.cpp") -o ~/ddsbuild/libdds.so -lpthread
+          g++ -std=c++20 -O2 -I /tmp/dds/library/src tools/ddrun.cpp -L$HOME/ddsbuild -ldds -Wl,-rpath,$HOME/ddsbuild -o ~/ddsbuild/ddrun
+
+      - name: vugraph'tan yeni turnuvalar
+        id: scrape
+        run: node tools/scrape_cli.mjs /tmp/update.json ${{ github.event.inputs.months || '2' }}
+
+      - name: TBF MP sıralaması
+        run: python3 tools/tbf.py
+
+      - name: Siteyi üret
+        run: |
+          export DDRUN=$HOME/ddsbuild/ddrun
+          if [ "${{ steps.scrape.outputs.yeni }}" != "0" ]; then python3 tools/update.py /tmp/update.json; else python3 tools/update.py; fi
+
+      - name: Değişiklik var mı
+        id: diff
+        run: |
+          git add -A raw public tools/.ddcache.json
+          if git diff --cached --quiet; then echo "var=0" >> $GITHUB_OUTPUT; else echo "var=1" >> $GITHUB_OUTPUT; git diff --cached --stat | tail -3; fi
+
+      - name: Kaydet
+        if: steps.diff.outputs.var == '1'
+        run: |
+          git config user.name "briçskor bot"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -q -m "Günlük güncelleme $(TZ=Europe/Istanbul date +%F) — ${{ steps.scrape.outputs.yeni }} yeni turnuva"
+          git push
+
+      - name: Firebase'e yayımla
+        if: steps.diff.outputs.var == '1'
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then echo "::warning::FIREBASE_SERVICE_ACCOUNT secret yok, yayın atlandı"; exit 0; fi
+          echo "$SA" > /tmp/sa.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json npx -y firebase-tools@13 deploy --only hosting --project bricskor --non-interactive
+          rm -f /tmp/sa.json

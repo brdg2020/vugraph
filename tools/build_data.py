@@ -3,7 +3,7 @@
 
 Kullanım: build_data.py <raw.json> <club_slug> <club_name> <out_public_dir>
 """
-import json, re, subprocess, sys, unicodedata, os
+import json, re, subprocess, sys, tempfile, unicodedata, os
 from collections import defaultdict
 
 DDRUN = os.environ.get("DDRUN", "/tmp/ddsbuild/ddrun")
@@ -323,10 +323,20 @@ if __name__ == "__main__":
         hints = json.load(open(hp)) if hp and os.path.exists(hp) else None
         evs = build(raw, c["slug"], c["name"], out_dir, hints)
         print(c["slug"], len(evs), "turnuva")
-        meta.append({k: c.get(k) for k in ("slug", "name", "short", "city", "site", "aliases", "index")} |
-                    {"events": len(evs), "last": evs[0] if evs else None})
+        m = {k: c.get(k) for k in ("slug", "name", "short", "city", "site", "aliases", "index", "tbf")} | \
+            {"events": len(evs), "last": evs[0] if evs else None}
+        mp_raw = os.path.join(base, "..", "raw", f"bricskor_{c['slug']}_mp.json")
+        if os.path.exists(mp_raw):  # TBF MP sıralaması (tools/tbf.py)
+            mp = json.load(open(mp_raw))
+            with open(f"{out_dir}/data/{c['slug']}/mp.json", "w") as f:
+                json.dump(mp, f, ensure_ascii=False, separators=(",", ":"))
+            m["mp"] = {"count": len(mp["rows"]), "at": mp.get("at")}
+        meta.append(m)
     write_players(out_dir)
     with open(f"{out_dir}/data/clubs.json", "w") as f:
         json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
-    json.dump(AMBIG, open("/tmp/ambig.json", "w"))
+    try:
+        json.dump(AMBIG, open(os.path.join(tempfile.gettempdir(), "ambig.json"), "w"))
+    except OSError:
+        pass
     print("belirsiz masa:", len(AMBIG))

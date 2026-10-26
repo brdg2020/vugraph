@@ -1,6 +1,6 @@
 // briçskor vugraph çekici — clubs.vugraph.com üzerindeki bir sekmede çalıştırılır (Chrome).
 // Kullanım (sayfa bağlamında): await bricskorScrape(['major','hosgoru'], {months: 2})
-// Yalnızca skor.bricdersi.net'te henüz olmayan turnuvaları çeker, sonucu
+// Node'da: node tools/scrape_cli.mjs (GitHub Actions). Yalnızca skor.bricdersi.net'te henüz olmayan turnuvaları çeker, sonucu
 // bricskor_update_<tarih>.json olarak indirir. Dosya: {"<kulüp>": {"<id>": olay}}
 window.bricskorScrape = async function (clubs, opts = {}) {
   const months = opts.months || 2, workers = opts.workers || 4, force = opts.force || false;
@@ -44,7 +44,8 @@ window.bricskorScrape = async function (clubs, opts = {}) {
   for (const club of clubs) {
     out[club] = {};
     let known = new Set();
-    if (!force) { try { const idx = await (await fetch('https://skor.bricdersi.net/data/' + club + '/index.json', { cache: 'no-store' })).json(); known = new Set(idx.events.map(e => String(e.id))); } catch (e) { log.push(club + ': mevcut liste alınamadı'); } }
+    if (opts.known) known = new Set((opts.known[club] || []).map(String));
+    else if (!force) { try { const idx = await (await fetch('https://skor.bricdersi.net/data/' + club + '/index.json', { cache: 'no-store' })).json(); known = new Set(idx.events.map(e => String(e.id))); } catch (e) { log.push(club + ': mevcut liste alınamadı'); } }
     for (let k = 0; k < months; k++) {
       const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
       const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
@@ -57,6 +58,6 @@ window.bricskorScrape = async function (clubs, opts = {}) {
   await Promise.all(Array.from({ length: workers }, async () => { while (q.length) { const [c, id] = q.shift(); try { out[c][id] = await scrape(c, id); log.push(c + id + ' ok'); } catch (e) { log.push(c + id + ' HATA ' + e.message); } } }));
   window.__bricskorOut = out;
   const name = 'bricskor_update_' + now.toISOString().slice(0, 10) + '.json';
-  if (uniq.length) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  if (uniq.length && opts.download !== false && typeof document !== 'undefined') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
   return { yeni: uniq.length, dosya: uniq.length ? name : null, log: log.slice(-20) };
 };

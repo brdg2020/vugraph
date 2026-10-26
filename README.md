@@ -3,6 +3,7 @@
 Briç kulüplerinin turnuva sonuçlarını yayımlayan site — https://skor.bricdersi.net
 
 - Takvim, sıralama, skor kartları, matris, oyuncu sayfaları
+- Kulüp başına TBF güncel MP sıralaması (`/kulup/<kulüp>/mp-siralamasi`), oyuncu sayfasında güncel MP
 - Tek el görünümü: kompakt diyagram, el şeridi, klavye/kaydırma ile geçiş
 - Double dummy tablosu, par ve masa bazında DD karşılaştırması, atak analizi
 - BBO tarzı eli oynama: her kartta canlı double dummy (DDS → WebAssembly, tarayıcıda çalışır)
@@ -21,7 +22,7 @@ Briç kulüplerinin turnuva sonuçlarını yayımlayan site — https://skor.bri
 
 ## Veri üretme
 
-Kulüpler `tools/clubs.json` içinde tanımlı (`index: true` olanlar Google'a açık). Her kulübün vugraph ham verisi `raw/` klasöründe (git'e girmez).
+Kulüpler `tools/clubs.json` içinde tanımlı (`vugraph`: vugraph kısa adı, `tbf`: TBF kulüp kimliği, `index: true` olanlar Google'a açık). Her kulübün vugraph ham verisi ve TBF sıralaması `raw/` klasöründe; double dummy önbelleği `tools/.ddcache.json`.
 
 ```bash
 # DDS'i yerel olarak derle (bir kez)
@@ -37,9 +38,20 @@ python3 tools/prerender.py public
 
 `prerender.py` her kulüp için `public/kulup/<kulüp>.html` (ör. "Major Boğaziçi Briç Spor Kulübü Skorları"), her turnuva için `public/kulup/<kulüp>/<turnuva>.html`, ayrıca `index.html`, `app.html` (diğer yollar, noindex), `sitemap.xml` ve `robots.txt` üretir. Sayfalar JavaScript olmadan da sıralamayı gösterir; JavaScript yüklenince uygulama devralır.
 
-### Günlük güncelleme
+### Günlük güncelleme (GitHub Actions)
 
-Her kulüp için günde bir kez, **17:15 (İstanbul)**'te vugraph kontrol edilir; yeni turnuva varsa çekilir, veri ve sayfalar yeniden üretilip yayımlanır.
+`.github/workflows/gunluk.yml` her gün **17:15** ve **23:40 (İstanbul)**'da çalışır, bilgisayar açık olmasına gerek yoktur:
+
+1. `tools/scrape_cli.mjs` — `scrape.js`'i başsız Chromium'da çalıştırır, vugraph'tan yalnızca `raw/`'da olmayan turnuvaları çeker
+2. `tools/tbf.py` — TBF güncel MP sıralamasını çeker (`raw/bricskor_<kulüp>_mp.json`)
+3. `tools/update.py` — ham veriyi ekler, `build_data.py` + `prerender.py` ile siteyi üretir
+4. Değişiklik varsa repoya commit eder ve Firebase Hosting'e yayımlar
+
+Elle çalıştırmak için: Actions → "Günlük skor güncellemesi" → Run workflow.
+
+Yayın için repoda `FIREBASE_SERVICE_ACCOUNT` secret'ı gerekir (Firebase Hosting Admin yetkili servis hesabının JSON anahtarı). Yoksa iş veriyi üretip commit eder, yayını atlar.
+
+Ağ erişimi olmayan bir ortamda elle güncelleme: tarayıcıda `tools/scrape.js` (clubs.vugraph.com üzerinde) ve `tools/tbf.js` (mp.tbricfed.org.tr üzerinde) çalıştırılır, indirilen dosyalar `update.py <dosya>` ve `tbf.py --from <dosya>` ile içe aktarılır.
 
 ## Yerel test ve yayın
 

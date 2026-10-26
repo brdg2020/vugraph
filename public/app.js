@@ -33,6 +33,17 @@ const dowOf = d => { const x = new Date(d + 'T12:00:00'); return ['Pazar', 'Paza
 const pctClass = v => v >= 60 ? 'pc-good' : v <= 40 ? 'pc-bad' : '';
 const cardHtml = c => `<span class="${c[0]}">${SYM[c[0]]}</span>${c[1] === 'T' ? '10' : c[1]}`;
 const suitSpan = s => `<span class="sym ${s}">${SYM[s]}</span>`;
+const normName = s => String(s || '').toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/\s+/g, ' ').trim();
+const trName = s => String(s || '').toLocaleLowerCase('tr').replace(/(^|[\s\-'(])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('tr'));
+const VISA_TR = { kulup: 'Kulüp', bireysel: 'Bireysel', uyelik: 'Üyelik', vizesiz: 'Vizesiz' };
+const fmtMp = v => v == null ? '–' : (+v).toFixed(2);
+function clubTabs(club, info, active) {
+  if (!info?.mp) return '';
+  return `<nav class="tabs"><a href="${L('/kulup/' + club)}" data-link class="${active === 't' ? 'on' : ''}">Turnuvalar</a><a href="${L('/kulup/' + club + '/mp-siralamasi')}" data-link class="${active === 'mp' ? 'on' : ''}">MP sıralaması</a></nav>`;
+}
+async function mpIndex(club) {
+  try { const mp = await getJSON(`/data/${club}/mp.json`); if (!mp._ix) { mp._ix = new Map(); mp.rows.forEach(r => mp._ix.set(normName(r[2]), r)); } return mp; } catch (e) { return null; }
+}
 
 function setTitle(t) { document.title = t ? `${t} · briçskor` : 'briçskor — Kulüp briç turnuva sonuçları'; }
 
@@ -164,7 +175,7 @@ async function bindSearch() {
   const q = document.getElementById('q'), out = document.getElementById('qres');
   if (!q) return;
   const [players, clubs] = await Promise.all([getJSON('/data/players.json'), getJSON('/data/clubs.json')]);
-  const norm = s => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+  const norm = normName;
   q.addEventListener('input', () => {
     const v = norm(q.value.trim());
     if (v.length < 2) { out.hidden = true; return; }
@@ -189,8 +200,32 @@ async function viewClub(club, q) {
     ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›</div>`}
     <h1 class="club-h">${esc(idx.name)} skorları</h1>
     <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
+    ${clubTabs(club, info, 't')}
     ${calendarHtml(club, idx.events, ym, months)}
     ${EMBED ? embedFoot() : ''}`;
+}
+async function viewMp(club) {
+  const info = (await getJSON('/data/clubs.json')).find(c => c.slug === club);
+  const mp = info?.mp && await mpIndex(club);
+  if (!mp) return notFound();
+  const players = await getJSON('/data/players.json');
+  const ours = new Map(players.map(p => [normName(p[1]), p[0]]));
+  setTitle(`${info.name} MP Sıralaması`);
+  const at = mp.at ? new Date(mp.at) : null;
+  const atTxt = at ? `${at.getDate()} ${MONTHS[at.getMonth()]} ${at.getFullYear()}` : '';
+  const rowHtml = r => { const sl = ours.get(normName(r[2])); const nm = esc(trName(r[2]));
+    return `<tr data-n="${esc(normName(r[2]))}"><td class="num">${r[0]}</td><td>${sl ? `<a href="${L('/oyuncu/' + sl)}" data-link>${nm}</a>` : nm}<div class="note">${esc(r[3])}${r[5] ? ' · ' + esc(r[5]) : ''}</div></td><td class="num pct">${fmtMp(r[4])}</td><td class="hide-sm">${esc(VISA_TR[r[6]] || r[6])}</td></tr>`; };
+  $app.innerHTML = `
+    ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›<a href="${L('/kulup/' + club)}" data-link>${esc(info.name)}</a>›</div>`}
+    <h1 class="club-h">${esc(info.name)} MP sıralaması</h1>
+    <p class="sub">TBF güncel masterpoint sıralaması · ${mp.rows.length} sporcu${atTxt ? ' · ' + atTxt : ''}</p>
+    ${clubTabs(club, info, 'mp')}
+    <input class="search" id="mpq" placeholder="Sporcu arayın" autocomplete="off">
+    <div class="card tbl-wrap" style="margin-top:12px"><table class="t mp"><thead><tr><th class="num">Sıra</th><th>Sporcu</th><th class="num">Güncel MP</th><th class="hide-sm">Vize</th></tr></thead><tbody id="mpbody">${mp.rows.map(rowHtml).join('')}</tbody></table></div>
+    <p class="note">${esc(mp.explanation || '')} Kaynak: <a href="https://mp.tbricfed.org.tr/ranking?club=${info.tbf}&mode=guncel" rel="noopener">Türkiye Briç Federasyonu</a>. Bağlantılı isimler briçskor oyuncu sayfasına gider.</p>
+    ${EMBED ? embedFoot() : ''}`;
+  const qi = document.getElementById('mpq'), trs = [...document.querySelectorAll('#mpbody tr')];
+  qi.addEventListener('input', () => { const v = normName(qi.value); trs.forEach(tr => tr.hidden = v.length >= 2 && !tr.dataset.n.includes(v)); });
 }
 // vugraph tarzı aylık takvim: her günde o günün turnuvaları, tıklayınca yeni tasarım açılır
 function calendarHtml(club, events, ym, months) {
@@ -490,6 +525,9 @@ async function viewPlayer(slug) {
   const wins = evs.filter(e => e.rank === 1).length;
   const partners = new Map(); evs.forEach(e => { const k = e.partner; if (!partners.has(k)) partners.set(k, []); partners.get(k).push(e.pct); });
   const pList = [...partners.entries()].map(([n, a]) => ({ n, c: a.length, avg: a.reduce((s, x) => s + x, 0) / a.length })).sort((a, b) => b.c - a.c);
+  const clubsAll = await getJSON('/data/clubs.json');
+  let mpRow = null;
+  for (const c of clubsAll.filter(c => c.mp && evs.some(e => e.club === c.slug))) { const mp = await mpIndex(c.slug); mpRow = mp?._ix.get(normName(p.name)); if (mpRow) break; }
   const chron = [...evs].reverse();
   const W = 600, H = 110, pad = 6;
   const xs = i => pad + (chron.length > 1 ? i * (W - 2 * pad) / (chron.length - 1) : W / 2);
@@ -504,6 +542,7 @@ async function viewPlayer(slug) {
       <div class="card stat"><div class="k">En iyi</div><div class="v">%${fmtPct(best?.pct)}</div><div class="sx">${best ? fmtDate(best.date) : ''}</div></div>
       <div class="card stat"><div class="k">Birincilik</div><div class="v">${wins}</div></div>
       <div class="card stat"><div class="k">Partner sayısı</div><div class="v">${pList.length}</div></div>
+      ${mpRow ? `<div class="card stat"><div class="k">TBF güncel MP</div><div class="v">${fmtMp(mpRow[4])}</div><div class="sx">${esc(mpRow[3])}</div></div>` : ''}
     </div>
     ${chron.length > 1 ? `<h2>Gidişat</h2><div class="card pad"><svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${ys(50)}" y2="${ys(50)}" stroke="currentColor" opacity=".15" stroke-dasharray="4 4"/><path d="${path}" fill="none" stroke="var(--brand)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>${chron.map((e, i) => `<circle cx="${xs(i)}" cy="${ys(e.pct)}" r="3.5" fill="var(--brand)"><title>${fmtDate(e.date)} · %${fmtPct(e.pct)}</title></circle>`).join('')}</svg><div class="note">Kesikli çizgi: %50</div></div>` : ''}
     <h2>Turnuvalar</h2>
@@ -534,6 +573,7 @@ async function route() {
   try {
     if (!seg.length) await viewHome();
     else if (seg[0] === 'kulup' && seg.length === 2) await viewClub(seg[1], q);
+    else if (seg[0] === 'kulup' && seg.length === 3 && seg[2] === 'mp-siralamasi') await viewMp(seg[1]);
     else if (seg[0] === 'kulup' && seg.length === 3) await viewTournament(seg[1], seg[2], q);
     else if (seg[0] === 'kulup' && seg[3] === 'el' && seg[4]) await viewBoard(seg[1], seg[2], seg[4], q);
     else if (seg[0] === 'kulup' && seg[3] === 'cift' && seg[4]) await viewPair(seg[1], seg[2], seg[4]);
