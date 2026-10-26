@@ -22,7 +22,7 @@ Briç kulüplerinin turnuva sonuçlarını yayımlayan site — https://skor.bri
 
 ## Veri üretme
 
-Kulüpler `tools/clubs.json` içinde tanımlı (`vugraph`: vugraph kısa adı, `tbf`: TBF kulüp kimliği, `index: true` olanlar Google'a açık). Her kulübün vugraph ham verisi ve TBF sıralaması `raw/` klasöründe; double dummy önbelleği `tools/.ddcache.json`.
+Kulüpler `tools/clubs.json` içinde tanımlı (`vugraph`: vugraph kısa adı, `tbf`: TBF kulüp kimliği, `index: true` olanlar Google'a açık). Ham vugraph verisi turnuva başına `raw/<kulüp>/<id>.json`, TBF sıralaması `raw/bricskor_<kulüp>_mp.json`, double dummy önbelleği turnuva başına `tools/ddcache/<kulüp>/<id>.json`.
 
 ```bash
 # DDS'i yerel olarak derle (bir kez)
@@ -47,7 +47,7 @@ python3 tools/prerender.py public
 3. `tools/update.py` — ham veriyi ekler, `build_data.py` + `prerender.py` ile siteyi üretir
 4. Değişiklik varsa repoya commit eder ve Firebase Hosting'e yayımlar
 
-Elle çalıştırmak için: Actions → "Günlük skor güncellemesi" → Run workflow.
+Elle çalıştırmak için: Actions → "Günlük skor güncellemesi" → Run workflow. Yeni kulüp eklerken `tools/clubs.json`'a ekleyip geçmişi tek kulüp için çekin: `kulup=<slug>`, `en_cok=500`. Zamanlanmış çalıştırmalar en fazla 60 turnuva çeker (en yeniler önce), kalanı sonraki çalıştırmaya kalır.
 
 Yayın anahtarsızdır: GitHub, Google Cloud'daki `github` Workload Identity havuzu üzerinden `github-deploy@bricskor.iam.gserviceaccount.com` servis hesabı (Firebase Hosting Admin) kimliğine bürünür. Repoda secret gerekmez; havuz yalnızca `brdg2020/vugraph` reposunu kabul eder.
 

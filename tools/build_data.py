@@ -4,6 +4,8 @@
 Kullanım: build_data.py <raw.json> <club_slug> <club_name> <out_public_dir>
 """
 import json, re, subprocess, sys, tempfile, unicodedata, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import rawstore
 from collections import defaultdict
 
 DDRUN = os.environ.get("DDRUN", "/tmp/ddsbuild/ddrun")
@@ -86,19 +88,50 @@ def hcp(cards):
     return sum(v.get(c, 0) for s in cards for c in s)
 
 
-DDCACHE = os.environ.get("DDCACHE", os.path.join(os.path.dirname(os.path.abspath(__file__)), ".ddcache.json"))
+DDDIR = os.environ.get("DDDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "ddcache"))
+_LEGACY = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".ddcache.json")  # eski tek dosyalık önbellek (geçiş için)
+_legacy_cache = None
 
 
-def run_dd(jobs):
-    """jobs: list of (pbn, dealer, vul, specs) -> list of dicts (önbellekli)"""
-    cache = json.load(open(DDCACHE)) if os.path.exists(DDCACHE) else {}
+def _dd_compute(todo):
+    """ddrun'ı çekirdek sayısı kadar paralel süreçle çalıştırır."""
+    from concurrent.futures import ThreadPoolExecutor
+    n = max(1, min(len(todo), os.cpu_count() or 2))
+    chunks = [todo[i::n] for i in range(n)]
+
+    def go(ch):
+        out = subprocess.run([DDRUN], input="\n".join(ch) + "\n", capture_output=True, text=True, check=True).stdout.strip().splitlines()
+        if len(out) != len(ch):
+            raise RuntimeError(f"ddrun {len(ch)} satır yerine {len(out)} satır döndürdü")
+        return ch, out
+
+    res = {}
+    with ThreadPoolExecutor(n) as ex:
+        for ch, out in ex.map(go, chunks):
+            for l, o in zip(ch, out):
+                res[l] = json.loads(o)
+    return res
+
+
+def run_dd(jobs, shard):
+    """jobs: list of (pbn, dealer, vul, specs) -> list of dicts. Önbellek turnuva başına: ddcache/<kulüp>/<id>.json"""
+    global _legacy_cache
     lines = [f"{p.replace(' ', '_')} {d} {v} {' '.join(sp)}" for p, d, v, sp in jobs]
-    todo = [l for l in dict.fromkeys(lines) if l not in cache]
-    if todo:
-        out = subprocess.run([DDRUN], input="\n".join(todo) + "\n", capture_output=True, text=True, check=True).stdout
-        for l, o in zip(todo, out.strip().splitlines()):
-            cache[l] = json.loads(o)
-        json.dump(cache, open(DDCACHE, "w"))
+    uniq = list(dict.fromkeys(lines))
+    cache = json.load(open(shard)) if os.path.exists(shard) else {}
+    missing = [l for l in uniq if l not in cache]
+    if missing:
+        if _legacy_cache is None:
+            _legacy_cache = json.load(open(_LEGACY)) if os.path.exists(_LEGACY) else {}
+        for l in missing:
+            if l in _legacy_cache:
+                cache[l] = _legacy_cache[l]
+        todo = [l for l in missing if l not in cache]
+        if todo:
+            cache.update(_dd_compute(todo))
+        os.makedirs(os.path.dirname(shard), exist_ok=True)
+        with open(shard, "w") as f:
+            json.dump({l: cache[l] for l in uniq}, f, separators=(",", ":"))
     return [cache[l] for l in lines]
 
 
@@ -229,7 +262,7 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
                 if c and "strain" in c and r["by"] in SEATS:
                     specs.add(f"{SEATS.index(r['by'])}{STRAINS.index(c['strain'])}")
             jobs.append((pbn, SEATS.index(bd["dealer"]), VUL_DDS[bd["vul"]], sorted(specs)))
-        dd = run_dd(jobs) if jobs else []
+        dd = run_dd(jobs, os.path.join(DDDIR, club_slug, f"{ev['id']}.json")) if jobs else []
         for bd, res in zip(blist, dd):
             if "err" in res:
                 continue
@@ -315,12 +348,9 @@ if __name__ == "__main__":
     clubs = json.load(open(cfg_path))
     meta = []
     for c in clubs:
-        rp = os.path.join(base, "..", c["raw"]) if c.get("raw") else None
-        if not rp or not os.path.exists(rp):
+        raw, hints = rawstore.load(c)
+        if not raw:
             print("veri yok, atlandı:", c["slug"]); continue
-        raw = json.load(open(rp))
-        hp = os.path.join(base, "..", c["hints"]) if c.get("hints") else None
-        hints = json.load(open(hp)) if hp and os.path.exists(hp) else None
         evs = build(raw, c["slug"], c["name"], out_dir, hints)
         print(c["slug"], len(evs), "turnuva")
         m = {k: c.get(k) for k in ("slug", "name", "short", "city", "site", "aliases", "index", "tbf")} | \

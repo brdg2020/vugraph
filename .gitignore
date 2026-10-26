@@ -1,9 +1,7 @@
-raw/*
-!raw/bricskor_*_raw.json
-!raw/bricskor_*_hints.json
-!raw/bricskor_*_mp.json
-!raw/bricskor_skip.json
+raw/*_new.json
+raw/*_raw2.json
 .firebase/
 node_modules/
 .DS_Store
 *.log
+__pycache__/

@@ -54,7 +54,11 @@ window.bricskorScrape = async function (clubs, opts = {}) {
       log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
     }
   }
-  const uniq = [...new Map(jobs.map(j => [j.join(':'), j])).values()];
+  let uniq = [...new Map(jobs.map(j => [j.join(':'), j])).values()];
+  if (opts.max && uniq.length > opts.max) { // en yeniler önce; kalanlar sonraki çalıştırmada
+    log.push('sınır: ' + uniq.length + ' turnuvadan ' + opts.max + ' tanesi çekiliyor');
+    uniq = uniq.sort((a, b) => b[1] - a[1]).slice(0, opts.max);
+  }
   const q = [...uniq];
   await Promise.all(Array.from({ length: workers }, async () => { while (q.length) { const [c, id] = q.shift(); try { out[c][id] = await scrape(c, id); log.push(c + id + ' ok'); } catch (e) { log.push(c + id + ' HATA ' + e.message); } } }));
   window.__bricskorOut = out;

@@ -11,19 +11,22 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const [out = 'update.json', months = '2'] = process.argv.slice(2);
 const readJSON = (p, d) => fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : d;
 
-const clubs = readJSON(path.join(ROOT, 'tools', 'clubs.json'), []);
+const only = (process.env.KULUPLER || '').split(',').map(x => x.trim()).filter(Boolean); // boşsa hepsi
+const clubs = readJSON(path.join(ROOT, 'tools', 'clubs.json'), []).filter(c => !only.length || only.includes(c.slug) || only.includes(c.vugraph));
+const max = +(process.env.EN_COK || 0) || undefined; // tek çalıştırmada en fazla kaç turnuva
 const skipP = path.join(ROOT, 'raw', 'bricskor_skip.json'); // eli olmayan olaylar (ör. genel sıralama) her gün tekrar çekilmesin
 const skip = readJSON(skipP, {});
 const known = {};
-for (const c of clubs) known[c.vugraph] = [...Object.keys(readJSON(path.join(ROOT, c.raw), {})), ...(skip[c.vugraph] || [])];
+const idsOf = c => { const d = path.join(ROOT, 'raw', c.slug); return fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.json')).map(f => f.slice(0, -5)) : []; };
+for (const c of clubs) known[c.vugraph] = [...idsOf(c), ...(skip[c.vugraph] || [])];
 
 const browser = await chromium.launch(process.env.CHROME_CHANNEL === 'none' ? {} : { channel: process.env.CHROME_CHANNEL || 'chrome' }).catch(() => chromium.launch());
 const page = await browser.newPage();
 await page.goto(`https://clubs.vugraph.com/${clubs[0].vugraph}/calendar.php`, { timeout: 60000 });
 await page.addScriptTag({ content: fs.readFileSync(path.join(ROOT, 'tools', 'scrape.js'), 'utf8') });
 page.setDefaultTimeout(0);
-const res = await page.evaluate(([c, m, k]) => window.bricskorScrape(c, { months: m, known: k, download: false }),
-  [clubs.map(c => c.vugraph), +months, known]);
+const res = await page.evaluate(([c, m, k, x]) => window.bricskorScrape(c, { months: m, known: k, max: x, download: false }),
+  [clubs.map(c => c.vugraph), +months, known, max]);
 const data = await page.evaluate(() => window.__bricskorOut || {});
 await browser.close();
 
