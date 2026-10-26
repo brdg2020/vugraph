@@ -3,6 +3,5 @@
   {"slug": "hosgoru", "vugraph": "hosgoru", "tbf": 98, "name": "Hoşgörü Briç Kulübü", "short": "Hoşgörü", "city": "İstanbul · Kızıltoprak", "site": "https://hosgorubric.com", "aliases": ["hoşgörü", "hosgoru", "hoşgörü briç"], "index": true},
   {"slug": "guzelbahce", "vugraph": "guzbisk", "tbf": 395, "name": "Güzelbahçe Briç Spor Kulübü", "short": "Güzelbahçe", "city": "İzmir · Güzelbahçe", "aliases": ["güzelbahçe", "guzelbahce", "guzbisk", "güzelbahçe briç"], "index": true},
   {"slug": "ege-bilimsel", "vugraph": "egebric", "tbf": 78, "name": "Ege Bilimsel Briç Spor Kulübü", "short": "Ege Bilimsel", "city": "İzmir · Hatay", "aliases": ["ege bilimsel", "ege briç", "egebric", "ege"], "index": true},
-  {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true},
-  {"slug": "atasehir", "vugraph": "atasehir", "tbf": 506, "name": "Ataşehir Briç Spor Kulübü", "short": "Ataşehir", "city": "İstanbul · Ataşehir", "aliases": ["ataşehir", "atasehir", "ataşehir briç"], "index": true}
+  {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true}
 ]
