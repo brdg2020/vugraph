@@ -48,6 +48,11 @@ def pack(club_id, meta, rows):
 def save(slug, data):
     p = os.path.join(ROOT, "raw", f"bricskor_{slug}_mp.json")
     os.makedirs(os.path.dirname(p), exist_ok=True)
+    if os.path.exists(p):  # sıralama değişmediyse dosyaya dokunma (gereksiz commit/yayın olmasın)
+        old = json.load(open(p))
+        if old.get("rows") == data["rows"] and old.get("at") == data["at"]:
+            print(f"{slug}: değişiklik yok ({len(data['rows'])} sporcu)")
+            return
     json.dump(data, open(p, "w"), ensure_ascii=False, separators=(",", ":"))
     print(f"{slug}: {len(data['rows'])} sporcu (TBF {data['at']})")
 

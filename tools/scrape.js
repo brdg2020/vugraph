@@ -51,6 +51,7 @@ window.bricskorScrape = async function (clubs, opts = {}) {
       const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
       const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
       ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+      log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
     }
   }
   const uniq = [...new Map(jobs.map(j => [j.join(':'), j])).values()];

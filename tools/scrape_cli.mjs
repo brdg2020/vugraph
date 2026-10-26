@@ -34,6 +34,7 @@ fs.mkdirSync(path.dirname(skipP), { recursive: true });
 fs.writeFileSync(skipP, JSON.stringify(skip));
 fs.writeFileSync(out, JSON.stringify(data));
 console.log(JSON.stringify({ yeni: res.yeni, log: res.log }));
+if (!res.log.some(l => /takvimde [1-9]/.test(l))) { console.error('vugraph takviminde hiç turnuva bulunamadı — site erişimi engellenmiş olabilir'); process.exit(1); }
 for (const [club, evs] of Object.entries(data))
   for (const ev of Object.values(evs)) console.log(`  ${club}: ${ev.title} (${Object.keys(ev.boards).length} el)`);
 if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `yeni=${res.yeni}\n`);
