@@ -40,7 +40,7 @@ window.bricskorScrape = async function (clubs, opts = {}) {
     }
     return { id, title, pairs, boards, hints };
   }
-  const now = new Date(); const out = {}; const jobs = []; const log = [];
+  const now = new Date(); const out = {}; const jobs = []; const log = []; let takvim = 0;
   for (const club of clubs) {
     out[club] = {};
     let known = new Set();
@@ -51,6 +51,7 @@ window.bricskorScrape = async function (clubs, opts = {}) {
       const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
       const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
       ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+      takvim += ids.length;
       log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
     }
   }
@@ -64,5 +65,5 @@ window.bricskorScrape = async function (clubs, opts = {}) {
   window.__bricskorOut = out;
   const name = 'bricskor_update_' + now.toISOString().slice(0, 10) + '.json';
   if (uniq.length && opts.download !== false && typeof document !== 'undefined') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
-  return { yeni: uniq.length, dosya: uniq.length ? name : null, log: log.slice(-20) };
+  return { yeni: uniq.length, takvim, dosya: uniq.length ? name : null, log: log.slice(-20) };
 };
