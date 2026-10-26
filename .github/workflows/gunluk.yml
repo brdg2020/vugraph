@@ -95,6 +95,7 @@ jobs:
         with:
           workload_identity_provider: projects/870574749780/locations/global/workloadIdentityPools/github/providers/github
           service_account: github-deploy@bricskor.iam.gserviceaccount.com
+          token_format: access_token   # izin eksikse hatayı burada açıkça gösterir
 
       - name: Firebase'e yayımla
         if: steps.diff.outputs.var == '1' || inputs.yayinla
