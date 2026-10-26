@@ -185,43 +185,35 @@ async function viewClub(club, q) {
   setTitle(`${idx.name} Skorları – Güncel Turnuva Sonuçları`);
   const months = [...new Set(idx.events.map(e => e.date?.slice(0, 7)).filter(Boolean))].sort().reverse();
   const ym = q.get('ay') || months[0] || new Date().toISOString().slice(0, 7);
+  $app.innerHTML = `
+    ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›</div>`}
+    <h1 class="club-h">${esc(idx.name)} skorları</h1>
+    <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
+    ${calendarHtml(club, idx.events, ym, months)}
+    ${EMBED ? embedFoot() : ''}`;
+}
+// vugraph tarzı aylık takvim: her günde o günün turnuvaları, tıklayınca yeni tasarım açılır
+function calendarHtml(club, events, ym, months) {
   const [Y, M] = ym.split('-').map(Number);
-  const evs = idx.events.filter(e => e.date?.startsWith(ym));
+  const evs = events.filter(e => e.date?.startsWith(ym));
   const first = new Date(Y, M - 1, 1); const startDow = (first.getDay() + 6) % 7; const days = new Date(Y, M, 0).getDate();
   const today = new Date().toISOString().slice(0, 10);
-  let cells = DOW.map(d => `<div class="dow">${d}</div>`).join('');
+  let cells = DOW.map((d, i) => `<div class="dow${i > 4 ? ' we' : ''}">${d}</div>`).join('');
   for (let i = 0; i < startDow; i++) cells += '<div class="day out"></div>';
   for (let d = 1; d <= days; d++) {
     const ds = `${ym}-${String(d).padStart(2, '0')}`;
     const list = evs.filter(e => e.date === ds).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-    cells += `<div class="day${ds === today ? ' today' : ''}"><span class="n">${d}</span>${list.map(e => `<a href="${L(`/kulup/${club}/${e.slug}`)}" data-link title="${esc(e.name)}">${esc(e.name)}</a>`).join('')}</div>`;
+    const dw = (startDow + d - 1) % 7;
+    cells += `<div class="day${ds === today ? ' today' : ''}${list.length ? ' has' : ''}${dw > 4 ? ' we' : ''}"><span class="n">${d}</span>${list.map(e => `<a href="${L(`/kulup/${club}/${e.slug}`)}" data-link title="${esc(e.name)} · ${e.time || ''}" data-n="${esc(e.name)}"><span class="et">${esc(e.time || '')}</span>${esc(e.name)}</a>`).join('')}</div>`;
   }
   const tail = (7 - (startDow + days) % 7) % 7; for (let i = 0; i < tail; i++) cells += '<div class="day out"></div>';
-  const prev = months[months.indexOf(ym) + 1], next = months[months.indexOf(ym) - 1];
-  // son turnuvanın sıralaması doğrudan sayfanın başında
-  const lastE = idx.events[0];
-  let lastHtml = '';
-  if (lastE && !q.get('ay')) {
-    try {
-      const ev = await loadEvent(club, lastE.slug);
-      lastHtml = `<h2>Son turnuva: <a href="${L(`/kulup/${club}/${lastE.slug}`)}" data-link>${esc(ev.name)}</a> <span class="note">${fmtDate(ev.date)} ${ev.time || ''}</span></h2>
-        ${rankingHtml(ev).replace(/<p class="note">.*<\/p>$/s, '')}
-        <div class="row" style="margin:-4px 0 6px"><a class="btn sm primary" href="${L(`/kulup/${club}/${lastE.slug}/el/1`)}" data-link>Elleri gör ›</a><a class="btn sm" href="${L(`/kulup/${club}/${lastE.slug}?sekme=kartlar`)}" data-link>Skor kartları</a></div>`;
-    } catch { }
-  }
-  $app.innerHTML = `
-    ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›</div>`}
-    <h1>${esc(idx.name)} skorları</h1>
-    <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
-    ${lastHtml}
-    <h2>Turnuva takvimi</h2>
-    <div class="card">
-      <div class="cal-head">${prev ? `<a class="btn sm" href="${L(`/kulup/${club}?ay=${prev}`)}" data-link>‹</a>` : '<span></span>'}<b>${MONTHS[M - 1]} ${Y}</b>${next ? `<a class="btn sm" href="${L(`/kulup/${club}?ay=${next}`)}" data-link>›</a>` : '<span></span>'}</div>
-      <div class="cal">${cells}</div>
+  const i = months.indexOf(ym); const prev = months[i + 1], next = i > 0 ? months[i - 1] : null;
+  const nav = (m, t) => m ? `<a class="nav-arrow" href="${L(`/kulup/${club}?ay=${m}`)}" data-link aria-label="${t}">${t === 'Önceki ay' ? '‹' : '›'}</a>` : `<span class="nav-arrow dis">${t === 'Önceki ay' ? '‹' : '›'}</span>`;
+  return `<div class="card calbox">
+      <div class="cal-head">${nav(prev, 'Önceki ay')}<b>${MONTHS[M - 1]} ${Y}</b>${nav(next, 'Sonraki ay')}</div>
+      <div class="cal big">${cells}</div>
     </div>
-    <h2>${MONTHS[M - 1]} ${Y} turnuvaları</h2>
-    <div class="card evlist">${evs.length ? evs.map(e => evRow(club, e)).join('') : '<div class="empty">Bu ay turnuva yok.</div>'}</div>
-    ${EMBED ? embedFoot() : ''}`;
+    <p class="note">Bir turnuvaya dokunun: sıralama, eller, double dummy ve eli oynama.</p>`;
 }
 const embedFoot = () => `<div class="embed-foot">Sonuçlar: <a href="https://skor.bricdersi.net" target="_blank" rel="noopener">briçskor</a></div>`;
 

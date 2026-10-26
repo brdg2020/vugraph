@@ -74,6 +74,33 @@ def ranking(ev):
     return out
 
 
+DOW = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
+
+
+def calendar(club, evs):
+    if not evs:
+        return ""
+    ym = max(x["date"] for x in evs if x.get("date"))[:7]
+    Y, M = map(int, ym.split("-"))
+    import calendar as _c
+    start = date(Y, M, 1).weekday()
+    days = _c.monthrange(Y, M)[1]
+    months = sorted({x["date"][:7] for x in evs if x.get("date")}, reverse=True)
+    cells = "".join(f'<div class="dow{" we" if i > 4 else ""}">{d}</div>' for i, d in enumerate(DOW))
+    cells += '<div class="day out"></div>' * start
+    for d in range(1, days + 1):
+        ds = f"{ym}-{d:02d}"
+        lst = sorted([x for x in evs if x.get("date") == ds], key=lambda x: x.get("time") or "")
+        we = " we" if (start + d - 1) % 7 > 4 else ""
+        links = "".join(f'<a href="/kulup/{club}/{x["slug"]}" title="{e(x["name"])} · {e(x.get("time"))}" data-n="{e(x["name"])}"><span class="et">{e(x.get("time"))}</span>{e(x["name"])}</a>' for x in lst)
+        cells += f'<div class="day{" has" if lst else ""}{we}"><span class="n">{d}</span>{links}</div>'
+    cells += '<div class="day out"></div>' * ((7 - (start + days) % 7) % 7)
+    prev = months[1] if len(months) > 1 else None
+    nav_prev = f'<a class="nav-arrow" href="/kulup/{club}?ay={prev}" aria-label="Önceki ay">‹</a>' if prev else '<span class="nav-arrow dis">‹</span>'
+    return (f'<div class="card calbox"><div class="cal-head">{nav_prev}<b>{MONTHS[M - 1]} {Y}</b><span class="nav-arrow dis">›</span></div>'
+            f'<div class="cal big">{cells}</div></div><p class="note">Bir turnuvaya dokunun: sıralama, eller, double dummy ve eli oynama.</p>')
+
+
 clubs = json.load(open(os.path.join(PUB, "data", "clubs.json")))
 urls = []
 today = date.today().isoformat()
@@ -103,15 +130,10 @@ for c in clubs:
     slug, name = c["slug"], c["name"]
     idx = json.load(open(os.path.join(PUB, "data", slug, "index.json")))
     evs = idx["events"]
-    last_html = ""
-    if evs:
-        lev = json.load(open(os.path.join(PUB, "data", slug, "t", evs[0]["slug"] + ".json")))
-        last_html = (f'<h2>Son turnuva: <a href="/kulup/{slug}/{lev["slug"]}">{e(lev["name"])}</a> '
-                     f'<span class="note">{fdate(lev["date"])} {e(lev.get("time"))}</span></h2>' + ranking(lev)
-                     + f'<div class="row"><a class="btn sm primary" href="/kulup/{slug}/{lev["slug"]}/el/1">Elleri gör ›</a></div>')
-    body = (f'<div class="crumb"><a href="/">Kulüpler</a>›</div><h1>{e(name)} skorları</h1>'
-            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva · güncel turnuva sonuçları</p>' + last_html
-            + '<h2>Tüm turnuvalar</h2><div class="card evlist">' + "".join(ev_row(slug, x) for x in evs) + "</div>")
+    body = (f'<div class="crumb"><a href="/">Kulüpler</a>›</div><h1 class="club-h">{e(name)} skorları</h1>'
+            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva</p>' + calendar(slug, evs)
+            + '<details class="arsiv"><summary>Tüm turnuvalar</summary><div class="card evlist">'
+            + "".join(ev_row(slug, x) for x in evs) + "</div></details>")
     short = c.get("short") or name
     title = f"{name} Skorları – Güncel Turnuva Sonuçları | briçskor"
     desc = (f"{short} briç turnuva skorları: " + (f"son turnuva {evs[0]['name']} ({fdate(evs[0]['date'])}). " if evs else "")
