@@ -47,6 +47,16 @@ jobs:
           g++ -std=c++20 -O2 -fPIC -shared -I /tmp/dds/library/src -I /tmp/dds/library/src/api $(find /tmp/dds/library/src -name "*.cpp") -o ~/ddsbuild/libdds.so -lpthread
           g++ -std=c++20 -O2 -I /tmp/dds/library/src tools/ddrun.cpp -L$HOME/ddsbuild -ldds -Wl,-rpath,$HOME/ddsbuild -o ~/ddsbuild/ddrun
 
+      - name: DD motoru testi
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          c = json.load(open('tools/.ddcache.json')); k = next(iter(c))
+          out = subprocess.run([os.path.expanduser('~/ddsbuild/ddrun')], input=k + '\n', capture_output=True, text=True, check=True).stdout
+          assert json.loads(out.strip().splitlines()[0]) == c[k], 'ddrun çıktısı önbellekle uyuşmuyor'
+          print('ddrun tamam')
+          PY
+
       - name: vugraph'tan yeni turnuvalar
         id: scrape
         timeout-minutes: 60
