@@ -3,5 +3,10 @@
   {"slug": "hosgoru", "vugraph": "hosgoru", "tbf": 98, "name": "Hoşgörü Briç Kulübü", "short": "Hoşgörü", "city": "İstanbul · Kızıltoprak", "site": "https://hosgorubric.com", "aliases": ["hoşgörü", "hosgoru", "hoşgörü briç"], "index": true},
   {"slug": "guzelbahce", "vugraph": "guzbisk", "tbf": 395, "name": "Güzelbahçe Briç Spor Kulübü", "short": "Güzelbahçe", "city": "İzmir · Güzelbahçe", "aliases": ["güzelbahçe", "guzelbahce", "guzbisk", "güzelbahçe briç"], "index": true},
   {"slug": "ege-bilimsel", "vugraph": "egebric", "tbf": 78, "name": "Ege Bilimsel Briç Spor Kulübü", "short": "Ege Bilimsel", "city": "İzmir · Hatay", "aliases": ["ege bilimsel", "ege briç", "egebric", "ege"], "index": true},
-  {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true}
+  {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true},
+  {"slug": "dizdar", "vugraph": "ibsk", "name": "Dizdar İstanbul Briç Spor Kulübü", "short": "Dizdar İstanbul", "city": "İstanbul · Etiler", "aliases": ["dizdar", "ibsk", "istanbul briç spor"], "index": true},
+  {"slug": "kartal", "vugraph": "Kartalbrick", "name": "Kartal Briç Spor Kulübü", "short": "Kartal", "city": "İstanbul · Kartal", "aliases": ["kartal", "kartal briç"], "index": true},
+  {"slug": "kup", "vugraph": "kupbric", "name": "Küp Briç Spor Kulübü", "short": "Küp", "city": "İstanbul", "aliases": ["küp", "kup", "küp briç"], "index": true},
+  {"slug": "ankara", "vugraph": "abskd", "name": "Ankara Briç Kulübü", "short": "Ankara Briç", "city": "Ankara", "aliases": ["ankara", "ankara briç", "abskd"], "index": true},
+  {"slug": "kocaeli", "vugraph": "kocaelibridge", "name": "Kocaeli Büyükşehir Briç Spor Kulübü", "short": "Kocaeli", "city": "Kocaeli", "aliases": ["kocaeli", "izmit", "kocaeli briç"], "index": true}
 ]
