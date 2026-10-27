@@ -2,8 +2,8 @@ name: Günlük skor güncellemesi
 
 on:
   schedule:
-    - cron: '15 14 * * *'   # 17:15 İstanbul
-    - cron: '40 20 * * *'   # 23:40 İstanbul (akşam turnuvaları)
+    - cron: '30 14 * * *'   # her gün 17:30 İstanbul
+    - cron: '45 20 * * 2'   # salı 23:45 İstanbul (salı akşam turnuvası)
   workflow_dispatch:
     inputs:
       months:
