@@ -6,7 +6,7 @@
   {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true},
   {"slug": "dizdar", "vugraph": "ibsk", "name": "Dizdar İstanbul Briç Spor Kulübü", "short": "Dizdar İstanbul", "city": "İstanbul · Etiler", "aliases": ["dizdar", "ibsk", "istanbul briç spor"], "index": true},
   {"slug": "kartal", "vugraph": "Kartalbrick", "name": "Kartal Briç Spor Kulübü", "short": "Kartal", "city": "İstanbul · Kartal", "aliases": ["kartal", "kartal briç"], "index": true},
-  {"slug": "kup", "vugraph": "kupbric", "name": "Küp Briç Spor Kulübü", "short": "Küp", "city": "İstanbul", "aliases": ["küp", "kup", "küp briç"], "index": true},
+  {"slug": "kup", "vugraph": "kupbric", "name": "Kup Briç Spor Kulübü", "short": "Kup", "city": "İstanbul", "aliases": ["kup", "kup briç", "küp", "küp briç"], "index": true},
   {"slug": "ankara", "vugraph": "abskd", "name": "Ankara Briç Kulübü", "short": "Ankara Briç", "city": "Ankara", "aliases": ["ankara", "ankara briç", "abskd"], "index": true},
   {"slug": "kocaeli", "vugraph": "kocaelibridge", "name": "Kocaeli Büyükşehir Briç Spor Kulübü", "short": "Kocaeli", "city": "Kocaeli", "aliases": ["kocaeli", "izmit", "kocaeli briç"], "index": true}
 ]
