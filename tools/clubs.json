@@ -1,23 +1,601 @@
 [
-  {"slug": "major", "vugraph": "major", "tbf": 134, "name": "Major Boğaziçi Briç Spor Kulübü", "short": "Major Boğaziçi", "city": "İstanbul · Levent", "site": "https://majorbogazici.com", "aliases": ["major", "majör", "major bogazici", "boğaziçi"], "index": true},
-  {"slug": "hosgoru", "vugraph": "hosgoru", "tbf": 98, "name": "Hoşgörü Briç Kulübü", "short": "Hoşgörü", "city": "İstanbul · Kızıltoprak", "site": "https://hosgorubric.com", "aliases": ["hoşgörü", "hosgoru", "hoşgörü briç"], "index": true},
-  {"slug": "guzelbahce", "vugraph": "guzbisk", "tbf": 395, "name": "Güzelbahçe Briç Spor Kulübü", "short": "Güzelbahçe", "city": "İzmir · Güzelbahçe", "aliases": ["güzelbahçe", "guzelbahce", "guzbisk", "güzelbahçe briç"], "index": true},
-  {"slug": "ege-bilimsel", "vugraph": "egebric", "tbf": 78, "name": "Ege Bilimsel Briç Spor Kulübü", "short": "Ege Bilimsel", "city": "İzmir · Hatay", "aliases": ["ege bilimsel", "ege briç", "egebric", "ege"], "index": true},
-  {"slug": "adana", "vugraph": "adanabsk", "tbf": 2, "name": "Adana Briç Spor Kulübü", "short": "Adana", "city": "Adana · Seyhan", "aliases": ["adana", "adana briç", "adanabsk"], "index": true},
-  {"slug": "dizdar", "vugraph": "ibsk", "name": "Dizdar İstanbul Briç Spor Kulübü", "short": "Dizdar İstanbul", "city": "İstanbul · Etiler", "aliases": ["dizdar", "ibsk", "istanbul briç spor"], "index": true},
-  {"slug": "kartal", "vugraph": "Kartalbrick", "name": "Kartal Briç Spor Kulübü", "short": "Kartal", "city": "İstanbul · Kartal", "aliases": ["kartal", "kartal briç"], "index": true},
-  {"slug": "kup", "vugraph": "kupbric", "name": "Kup Briç Spor Kulübü", "short": "Kup", "city": "İstanbul", "aliases": ["kup", "kup briç", "küp", "küp briç"], "index": true},
-  {"slug": "ankara", "vugraph": "abskd", "name": "Ankara Briç Kulübü", "short": "Ankara Briç", "city": "Ankara", "aliases": ["ankara", "ankara briç", "abskd"], "index": true},
-  {"slug": "kocaeli", "vugraph": "kocaelibridge", "name": "Kocaeli Büyükşehir Briç Spor Kulübü", "short": "Kocaeli", "city": "Kocaeli", "aliases": ["kocaeli", "izmit", "kocaeli briç"], "index": true},
-  {"slug": "laodikya", "vugraph": "pamukkalebric", "name": "Laodikya Briç Spor Kulübü", "short": "Laodikya", "city": "Denizli", "aliases": ["laodikya", "pamukkale", "denizli", "laodikya briç", "pamukkalebric"], "index": true},
-  {"slug": "eryaman", "vugraph": "fastbridge", "name": "Eryaman Briç Spor Kulübü", "short": "Eryaman Briç", "city": "Ankara · Etimesgut", "aliases": ["eryaman", "fastbridge", "etimesgut", "eryaman briç"], "index": true},
-  {"slug": "baglarbasi", "vugraph": "cemalatun", "name": "Bağlarbaşı Briç Kulübü", "short": "Bağlarbaşı", "city": "İstanbul · Üsküdar", "aliases": ["bağlarbaşı", "baglarbasi", "üsküdar", "cemalatun", "cemal atun"], "index": true},
-  {"slug": "buyukcekmece", "vugraph": "Buyukcekmecebric", "name": "Büyükçekmece Briç Spor Kulübü", "short": "Büyükçekmece", "city": "İstanbul · Büyükçekmece", "aliases": ["büyükçekmece", "buyukcekmece", "büyükçekmece briç"], "index": true},
-  {"slug": "narlidere", "vugraph": "narbisk", "name": "Narlıdere Briç İhtisas Spor Kulübü", "short": "Narlıdere (NARBİSK)", "city": "İzmir · Narlıdere", "aliases": ["narlıdere", "narlidere", "narbisk", "narlıdere briç"], "index": true},
-  {"slug": "anka", "vugraph": "ankabric", "name": "ANKA Briç Spor Kulübü Derneği", "short": "ANKA Briç", "city": "Ankara · Çankaya", "aliases": ["anka", "anka briç", "ankabric", "çankaya"], "index": true},
-  {"slug": "kusadasi", "vugraph": "kusadasi", "name": "Kuşadası Briç Spor Kulübü", "short": "Kuşadası", "city": "Aydın · Kuşadası", "aliases": ["kuşadası", "kusadasi", "kuşadası briç", "aydın"], "index": true},
-  {"slug": "mersin", "vugraph": "mbsk", "name": "Mersin Briç Spor Kulübü", "short": "Mersin Briç", "city": "Mersin · Mezitli", "aliases": ["mersin", "mersin briç", "mbsk", "mezitli"], "index": true},
-  {"slug": "fethiye", "vugraph": "fethiyebric", "name": "Fethiye Briç Kulübü", "short": "Fethiye", "city": "Muğla · Fethiye", "aliases": ["fethiye", "fethiye briç", "fethiyebric"], "index": true},
-  {"slug": "samsun", "vugraph": "SBSK", "name": "Samsun Briç Spor Kulübü (SBSK)", "short": "Samsun (SBSK)", "city": "Samsun · İlkadım", "aliases": ["samsun", "samsun briç", "sbsk"], "index": true},
-  {"slug": "cayyolu", "vugraph": "cayyolu", "name": "Çayyolu Briç Spor Kulübü", "short": "Çayyolu", "city": "Ankara · Çankaya", "aliases": ["çayyolu", "cayyolu", "çayyolu briç"], "index": true}
+  {
+    "slug": "major",
+    "vugraph": "major",
+    "tbf": 134,
+    "name": "Major Boğaziçi Briç Spor Kulübü",
+    "short": "Major Boğaziçi",
+    "city": "İstanbul · Levent",
+    "site": "https://majorbogazici.com",
+    "aliases": [
+      "major",
+      "majör",
+      "major bogazici",
+      "boğaziçi"
+    ],
+    "index": true
+  },
+  {
+    "slug": "hosgoru",
+    "vugraph": "hosgoru",
+    "tbf": 98,
+    "name": "Hoşgörü Briç Kulübü",
+    "short": "Hoşgörü",
+    "city": "İstanbul · Kızıltoprak",
+    "site": "https://hosgorubric.com",
+    "aliases": [
+      "hoşgörü",
+      "hosgoru",
+      "hoşgörü briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "guzelbahce",
+    "vugraph": "guzbisk",
+    "tbf": 395,
+    "name": "Güzelbahçe Briç Spor Kulübü",
+    "short": "Güzelbahçe",
+    "city": "İzmir · Güzelbahçe",
+    "aliases": [
+      "güzelbahçe",
+      "guzelbahce",
+      "guzbisk",
+      "güzelbahçe briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "ege-bilimsel",
+    "vugraph": "egebric",
+    "tbf": 78,
+    "name": "Ege Bilimsel Briç Spor Kulübü",
+    "short": "Ege Bilimsel",
+    "city": "İzmir · Hatay",
+    "aliases": [
+      "ege bilimsel",
+      "ege briç",
+      "egebric",
+      "ege"
+    ],
+    "index": true
+  },
+  {
+    "slug": "adana",
+    "vugraph": "adanabsk",
+    "tbf": 2,
+    "name": "Adana Briç Spor Kulübü",
+    "short": "Adana",
+    "city": "Adana · Seyhan",
+    "aliases": [
+      "adana",
+      "adana briç",
+      "adanabsk"
+    ],
+    "index": true
+  },
+  {
+    "slug": "dizdar",
+    "vugraph": "ibsk",
+    "name": "Dizdar İstanbul Briç Spor Kulübü",
+    "short": "Dizdar İstanbul",
+    "city": "İstanbul · Etiler",
+    "aliases": [
+      "dizdar",
+      "ibsk",
+      "istanbul briç spor"
+    ],
+    "index": true
+  },
+  {
+    "slug": "kartal",
+    "vugraph": "Kartalbrick",
+    "name": "Kartal Briç Spor Kulübü",
+    "short": "Kartal",
+    "city": "İstanbul · Kartal",
+    "aliases": [
+      "kartal",
+      "kartal briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "kup",
+    "vugraph": "kupbric",
+    "name": "Kup Briç Spor Kulübü",
+    "short": "Kup",
+    "city": "İstanbul",
+    "aliases": [
+      "kup",
+      "kup briç",
+      "küp",
+      "küp briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "ankara",
+    "vugraph": "abskd",
+    "name": "Ankara Briç Kulübü",
+    "short": "Ankara Briç",
+    "city": "Ankara",
+    "aliases": [
+      "ankara",
+      "ankara briç",
+      "abskd"
+    ],
+    "index": true
+  },
+  {
+    "slug": "kocaeli",
+    "vugraph": "kocaelibridge",
+    "name": "Kocaeli Büyükşehir Briç Spor Kulübü",
+    "short": "Kocaeli",
+    "city": "Kocaeli",
+    "aliases": [
+      "kocaeli",
+      "izmit",
+      "kocaeli briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "laodikya",
+    "vugraph": "pamukkalebric",
+    "name": "Laodikya Briç Spor Kulübü",
+    "short": "Laodikya",
+    "city": "Denizli",
+    "aliases": [
+      "laodikya",
+      "pamukkale",
+      "denizli",
+      "laodikya briç",
+      "pamukkalebric"
+    ],
+    "index": true
+  },
+  {
+    "slug": "eryaman",
+    "vugraph": "fastbridge",
+    "name": "Eryaman Briç Spor Kulübü",
+    "short": "Eryaman Briç",
+    "city": "Ankara · Etimesgut",
+    "aliases": [
+      "eryaman",
+      "fastbridge",
+      "etimesgut",
+      "eryaman briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "baglarbasi",
+    "vugraph": "cemalatun",
+    "name": "Bağlarbaşı Briç Kulübü",
+    "short": "Bağlarbaşı",
+    "city": "İstanbul · Üsküdar",
+    "aliases": [
+      "bağlarbaşı",
+      "baglarbasi",
+      "üsküdar",
+      "cemalatun",
+      "cemal atun"
+    ],
+    "index": true
+  },
+  {
+    "slug": "buyukcekmece",
+    "vugraph": "Buyukcekmecebric",
+    "name": "Büyükçekmece Briç Spor Kulübü",
+    "short": "Büyükçekmece",
+    "city": "İstanbul · Büyükçekmece",
+    "aliases": [
+      "büyükçekmece",
+      "buyukcekmece",
+      "büyükçekmece briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "narlidere",
+    "vugraph": "narbisk",
+    "name": "Narlıdere Briç İhtisas Spor Kulübü",
+    "short": "Narlıdere (NARBİSK)",
+    "city": "İzmir · Narlıdere",
+    "aliases": [
+      "narlıdere",
+      "narlidere",
+      "narbisk",
+      "narlıdere briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "anka",
+    "vugraph": "ankabric",
+    "name": "ANKA Briç Spor Kulübü Derneği",
+    "short": "ANKA Briç",
+    "city": "Ankara · Çankaya",
+    "aliases": [
+      "anka",
+      "anka briç",
+      "ankabric",
+      "çankaya"
+    ],
+    "index": true
+  },
+  {
+    "slug": "kusadasi",
+    "vugraph": "kusadasi",
+    "name": "Kuşadası Briç Spor Kulübü",
+    "short": "Kuşadası",
+    "city": "Aydın · Kuşadası",
+    "aliases": [
+      "kuşadası",
+      "kusadasi",
+      "kuşadası briç",
+      "aydın"
+    ],
+    "index": true
+  },
+  {
+    "slug": "mersin",
+    "vugraph": "mbsk",
+    "name": "Mersin Briç Spor Kulübü",
+    "short": "Mersin Briç",
+    "city": "Mersin · Mezitli",
+    "aliases": [
+      "mersin",
+      "mersin briç",
+      "mbsk",
+      "mezitli"
+    ],
+    "index": true
+  },
+  {
+    "slug": "fethiye",
+    "vugraph": "fethiyebric",
+    "name": "Fethiye Briç Kulübü",
+    "short": "Fethiye",
+    "city": "Muğla · Fethiye",
+    "aliases": [
+      "fethiye",
+      "fethiye briç",
+      "fethiyebric"
+    ],
+    "index": true
+  },
+  {
+    "slug": "samsun",
+    "vugraph": "SBSK",
+    "name": "Samsun Briç Spor Kulübü (SBSK)",
+    "short": "Samsun (SBSK)",
+    "city": "Samsun · İlkadım",
+    "aliases": [
+      "samsun",
+      "samsun briç",
+      "sbsk"
+    ],
+    "index": true
+  },
+  {
+    "slug": "cayyolu",
+    "vugraph": "cayyolu",
+    "name": "Çayyolu Briç Spor Kulübü",
+    "short": "Çayyolu",
+    "city": "Ankara · Çankaya",
+    "aliases": [
+      "çayyolu",
+      "cayyolu",
+      "çayyolu briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "besli-major",
+    "vugraph": "beslimajor",
+    "name": "Beşli Majör Briç Kulübü",
+    "short": "Beşli Majör",
+    "city": "İstanbul · Kadıköy",
+    "aliases": [
+      "beşli majör",
+      "besli major",
+      "moda",
+      "kadıköy"
+    ],
+    "index": true
+  },
+  {
+    "slug": "diyarbakir",
+    "vugraph": "pirani21",
+    "name": "Diyarbakır Briç Spor Kulübü",
+    "short": "Diyarbakır",
+    "city": "Diyarbakır · Kayapınar",
+    "aliases": [
+      "diyarbakır",
+      "diyarbakir",
+      "pirani",
+      "kayapınar"
+    ],
+    "index": true
+  },
+  {
+    "slug": "akademi",
+    "vugraph": "bridgeakademi",
+    "name": "Akademi Briç Spor Kulübü",
+    "short": "Akademi",
+    "city": "İstanbul · Levent",
+    "aliases": [
+      "akademi",
+      "akademi briç",
+      "levent",
+      "metrocity"
+    ],
+    "index": true
+  },
+  {
+    "slug": "gumusluk",
+    "vugraph": "samico",
+    "name": "Gümüşlük Briç Spor Kulübü",
+    "short": "Gümüşlük",
+    "city": "Muğla · Bodrum",
+    "aliases": [
+      "gümüşlük",
+      "gumusluk",
+      "bodrum",
+      "samico"
+    ],
+    "index": true
+  },
+  {
+    "slug": "yalikavak-ihtisas",
+    "vugraph": "ybisk",
+    "name": "Yalıkavak Briç İhtisas Spor Kulübü Derneği",
+    "short": "Yalıkavak İhtisas",
+    "city": "Muğla · Bodrum",
+    "aliases": [
+      "yalıkavak ihtisas",
+      "yalikavak",
+      "ybisk",
+      "bodrum"
+    ],
+    "index": true
+  },
+  {
+    "slug": "bodrum",
+    "vugraph": "bodrum",
+    "name": "Bodrum Briç Kulübü",
+    "short": "Bodrum Briç",
+    "city": "Muğla · Bodrum",
+    "aliases": [
+      "bodrum",
+      "bodrum briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "knidos",
+    "vugraph": "knidosbric",
+    "name": "Knidos Briç Kulübü",
+    "short": "Knidos",
+    "city": "Muğla · Datça",
+    "aliases": [
+      "knidos",
+      "knidos briç",
+      "datça"
+    ],
+    "index": true
+  },
+  {
+    "slug": "didim",
+    "vugraph": "sirsharp",
+    "name": "Didim Bilimsel Briç Spor Kulübü",
+    "short": "Didim Bilimsel",
+    "city": "Aydın · Didim",
+    "aliases": [
+      "didim",
+      "didim bilimsel",
+      "sirsharp",
+      "aydın"
+    ],
+    "index": true
+  },
+  {
+    "slug": "foca",
+    "vugraph": "foca",
+    "name": "Foça Belediye Spor Briç Kulübü",
+    "short": "Foça",
+    "city": "İzmir · Foça",
+    "aliases": [
+      "foça",
+      "foca",
+      "foça belediye"
+    ],
+    "index": true
+  },
+  {
+    "slug": "datca",
+    "vugraph": "datcabric",
+    "name": "Datça Briç Kulübü",
+    "short": "Datça",
+    "city": "Muğla · Datça",
+    "aliases": [
+      "datça",
+      "datca",
+      "datça briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "yalikavak-belediye",
+    "vugraph": "yalikavak",
+    "name": "Bodrum Belediyesi Yalıkavak Briç Spor Kulübü",
+    "short": "Yalıkavak Belediye",
+    "city": "Muğla · Bodrum",
+    "aliases": [
+      "yalıkavak",
+      "bodrum belediyesi",
+      "yalikavak"
+    ],
+    "index": true
+  },
+  {
+    "slug": "marmaris",
+    "vugraph": "marmaris",
+    "name": "Marmaris Briç Kulübü",
+    "short": "Marmaris",
+    "city": "Muğla · Marmaris",
+    "aliases": [
+      "marmaris",
+      "marmaris briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "cesmealti",
+    "vugraph": "calti",
+    "name": "Çeşmealtı Bilimsel Briç Spor Kulübü",
+    "short": "Çeşmealtı Bilimsel",
+    "city": "İzmir · Urla",
+    "aliases": [
+      "çeşmealtı",
+      "cesmealti",
+      "urla",
+      "calti"
+    ],
+    "index": true
+  },
+  {
+    "slug": "trabzon",
+    "vugraph": "trabzonbrickulubu",
+    "name": "Trabzon Briç Spor Kulübü",
+    "short": "Trabzon",
+    "city": "Trabzon · Ortahisar",
+    "aliases": [
+      "trabzon",
+      "trabzon briç",
+      "ortahisar"
+    ],
+    "index": true
+  },
+  {
+    "slug": "mugla",
+    "vugraph": "mugla",
+    "name": "Muğla Briç Kulübü",
+    "short": "Muğla Briç",
+    "city": "Muğla · Merkez",
+    "aliases": [
+      "muğla",
+      "mugla",
+      "muğla briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "itu-vakfi",
+    "vugraph": "vakif1234",
+    "name": "İTÜ Vakfı Briç Kulübü",
+    "short": "İTÜ Vakfı",
+    "city": "İstanbul · Beşiktaş",
+    "aliases": [
+      "itü vakfı",
+      "itu vakfi",
+      "maçka",
+      "vakif1234"
+    ],
+    "index": true
+  },
+  {
+    "slug": "buyuk-kulup",
+    "vugraph": "Buyukklupbric",
+    "name": "Büyük Kulüp Briç Spor Kulübü",
+    "short": "Büyük Kulüp",
+    "city": "İstanbul · Kadıköy",
+    "aliases": [
+      "büyük kulüp",
+      "buyuk kulup",
+      "çiftehavuzlar",
+      "cercle d orient"
+    ],
+    "index": true
+  },
+  {
+    "slug": "atakum",
+    "vugraph": "niyazi",
+    "name": "Atakum Briç Kulübü Derneği",
+    "short": "Atakum",
+    "city": "Samsun · Atakum",
+    "aliases": [
+      "atakum",
+      "atakum briç",
+      "samsun",
+      "niyazi"
+    ],
+    "index": true
+  },
+  {
+    "slug": "sariyer",
+    "vugraph": "SARIYER34",
+    "name": "Sarıyer Belediyesi Briç Spor Kulübü",
+    "short": "Sarıyer Belediye",
+    "city": "İstanbul · Sarıyer",
+    "aliases": [
+      "sarıyer",
+      "sariyer",
+      "sarıyer belediyesi"
+    ],
+    "index": true
+  },
+  {
+    "slug": "ortaca",
+    "vugraph": "Ortaca",
+    "name": "Ortaca Belediyespor Briç Kulübü",
+    "short": "Ortaca",
+    "city": "Muğla · Ortaca",
+    "aliases": [
+      "ortaca",
+      "ortaca belediye"
+    ],
+    "index": true
+  },
+  {
+    "slug": "akcakoca",
+    "vugraph": "palamut",
+    "name": "Akçakoca Palamut Briç Kulübü",
+    "short": "Akçakoca Palamut",
+    "city": "Düzce · Akçakoca",
+    "aliases": [
+      "akçakoca",
+      "palamut",
+      "düzce"
+    ],
+    "index": true
+  },
+  {
+    "slug": "bulancak",
+    "vugraph": "bulancakbric",
+    "name": "Bulancak Briç Yelken Spor Kulübü",
+    "short": "Bulancak",
+    "city": "Giresun · Bulancak",
+    "aliases": [
+      "bulancak",
+      "giresun",
+      "bulancak briç"
+    ],
+    "index": true
+  },
+  {
+    "slug": "balikesir",
+    "vugraph": "babik10",
+    "name": "Balıkesir Briç İhtisas Spor Kulübü",
+    "short": "Balıkesir (BABİK)",
+    "city": "Balıkesir · Karesi",
+    "aliases": [
+      "balıkesir",
+      "balikesir",
+      "babik",
+      "karesi"
+    ],
+    "index": true
+  }
 ]

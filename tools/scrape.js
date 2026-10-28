@@ -5,7 +5,7 @@
 window.bricskorScrape = async function (clubs, opts = {}) {
   const months = opts.months || 2, workers = opts.workers || 4, force = opts.force || false;
   const dec = new TextDecoder('windows-1254');
-  const get = async u => { for (let k = 0; k < 3; k++) { try { const r = await fetch(u); return new DOMParser().parseFromString(dec.decode(await r.arrayBuffer()), 'text/html'); } catch (e) { await new Promise(s => setTimeout(s, 800)); } } throw new Error('fail ' + u); };
+  const get = async u => { for (let k = 0; k < 3; k++) { try { const r = await fetch(u, { signal: AbortSignal.timeout(8000) }); return new DOMParser().parseFromString(dec.decode(await r.arrayBuffer()), 'text/html'); } catch (e) { await new Promise(s => setTimeout(s, 800)); } } throw new Error('fail ' + u); };
   const tx = e => e ? (e.textContent || '').replace(/\s+/g, ' ').trim() : '';
   const suit = c => { const im = c.querySelector('img'); return im ? (im.getAttribute('alt') || '').toUpperCase()[0] : ''; };
   const parseHand = cell => ({ name: tx(cell.querySelector('.isim')), cards: cell.innerHTML.split(/<img[^>]*>/i).slice(1).map(p => p.replace(/<br>/gi, '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '').trim()).slice(0, 4).map(p => p.replace(/\s/g, '').replace(/^(-|—)$/, '')) });
@@ -26,16 +26,18 @@ window.bricskorScrape = async function (clubs, opts = {}) {
       boards[p.sec + '|' + b] = { sec: p.sec, b, hands: { N: parseHand(ht.rows[0].cells[1]), E: parseHand(ht.rows[1].cells[2]), S: parseHand(ht.rows[2].cells[1]), W: parseHand(ht.rows[1].cells[0]) }, rows: rowsOf(tt).map(({ sp, ...r }) => r) };
     }
     const hints = {};
-    for (const p of pairs) {
-      if (p.dir === 'EW') continue;
-      for (const x of p.boards) {
-        const bd = boards[Object.keys(boards).find(k => k.endsWith('|' + x.b))]; if (!bd) continue;
-        const sc = parseInt(x.score); const sig = new Set();
-        bd.rows.forEach(r => { const ns = parseInt(r.ns), ew = parseInt(r.ew); const v = !isNaN(ns) ? ns : (!isNaN(ew) ? -ew : 0); if (v === sc || v === -sc) sig.add(r.con + r.dec + r.res + r.lead); });
-        if (sig.size < 2) continue;
-        const dd = await get(B + 'boarddetails.php?event=' + id + '&section=' + p.sec + '&pair=' + p.no + '&direction=' + p.dir + '&board=' + x.b);
-        const t = travT(dd); if (!t) continue; const idx = rowsOf(t).findIndex(r => r.sp);
-        if (idx >= 0) hints[p.sec + (p.dir === 'NONE' ? 'H' : p.dir[0]) + p.no + '|' + x.b] = idx;
+    if (pairs.length <= 30) {
+      for (const p of pairs) {
+        if (p.dir === 'EW') continue;
+        for (const x of p.boards) {
+          const bd = boards[Object.keys(boards).find(k => k.endsWith('|' + x.b))]; if (!bd) continue;
+          const sc = parseInt(x.score); const sig = new Set();
+          bd.rows.forEach(r => { const ns = parseInt(r.ns), ew = parseInt(r.ew); const v = !isNaN(ns) ? ns : (!isNaN(ew) ? -ew : 0); if (v === sc || v === -sc) sig.add(r.con + r.dec + r.res + r.lead); });
+          if (sig.size < 2) continue;
+          const dd = await get(B + 'boarddetails.php?event=' + id + '&section=' + p.sec + '&pair=' + p.no + '&direction=' + p.dir + '&board=' + x.b);
+          const t = travT(dd); if (!t) continue; const idx = rowsOf(t).findIndex(r => r.sp);
+          if (idx >= 0) hints[p.sec + (p.dir === 'NONE' ? 'H' : p.dir[0]) + p.no + '|' + x.b] = idx;
+        }
       }
     }
     return { id, title, pairs, boards, hints };
