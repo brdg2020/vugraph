@@ -6,6 +6,13 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#feltGrad)"/>
-  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="4"/>
-  <path fill="#ffffff" d="M 256 82 C 238 154 124 230 124 320 C 124 386 180 422 234 398 C 224 428 198 444 174 450 L 338 450 C 314 444 288 428 278 398 C 332 422 388 386 388 320 C 388 230 274 154 256 82 Z"/>
+  <rect x="18" y="18" width="476" height="476" rx="94" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="6"/>
+  <!-- Back card (tilted 14deg) -->
+  <rect x="180" y="74" width="220" height="320" rx="20" fill="#e2e8f0" transform="rotate(14 290 234)" stroke="#94a3b8" stroke-width="6"/>
+  <!-- Front card (upright) -->
+  <rect x="116" y="90" width="220" height="320" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="6"/>
+  <!-- Spade on front card -->
+  <g transform="translate(144, 155) scale(0.32)">
+    <path fill="#0b5d3b" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+  </g>
 </svg>

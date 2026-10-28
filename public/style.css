@@ -26,8 +26,8 @@ button{font:inherit;cursor:pointer}
 .brand{display:flex;align-items:center;gap:8px;color:#fff;font-size:20px;letter-spacing:-.3px;font-weight:600}
 .brand b{font-weight:800}
 .brand:hover{text-decoration:none}
-.logo{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#fff;color:var(--brand);font-size:20px}
-.logo svg{display:block;width:18px;height:18px}
+.logo{display:grid;place-items:center;width:30px;height:30px}
+.logo svg{display:block;width:30px;height:30px}
 .topnav{display:flex;gap:4px}
 .topnav a{color:#fff;opacity:.9;padding:6px 10px;border-radius:8px;font-weight:500}
 .topnav a:hover{background:rgba(255,255,255,.14);text-decoration:none}
