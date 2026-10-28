@@ -147,6 +147,124 @@ function namesHtml(p, link = true) {
 }
 
 // ---------- views
+let currentClubSort = 'az';
+let currentClubQuery = '';
+
+function fmtDateShort(d) {
+  if (!d) return '';
+  const [y, m, dd] = d.split('-');
+  return `${+dd} ${MON3[+m - 1] || ''}`;
+}
+
+function clubCardHtml(c) {
+  const shortName = c.short || c.name;
+  const lastDate = c.last?.date ? `<span class="c-last">son: ${fmtDateShort(c.last.date)}</span>` : '';
+  return `<a class="card club" href="${L('/kulup/' + c.slug)}" data-link title="${esc(c.name)}">
+    <div class="c-head">
+      <div class="nm">${esc(shortName)}</div>
+      <span class="c-badge" title="${c.events} turnuva">${c.events}</span>
+    </div>
+    <div class="meta">
+      <span class="c-city">${esc(c.city || '')}</span>
+      ${lastDate}
+    </div>
+  </a>`;
+}
+
+function renderClubCards(clubs) {
+  const grid = document.getElementById('clubs-grid');
+  const countEl = document.getElementById('club-count');
+  if (!grid) return;
+
+  const q = normName(currentClubQuery.trim());
+  let list = clubs.slice();
+
+  if (q) {
+    list = list.filter(c => {
+      const hay = [c.name, c.short, c.city, ...(c.aliases || [])].filter(Boolean).map(normName).join(' ');
+      return hay.includes(q);
+    });
+  }
+
+  if (currentClubSort === 'az') {
+    list.sort((a, b) => (a.short || a.name).localeCompare(b.short || b.name, 'tr'));
+  } else if (currentClubSort === 'za') {
+    list.sort((a, b) => (b.short || b.name).localeCompare(a.short || a.name, 'tr'));
+  } else if (currentClubSort === 'events') {
+    list.sort((a, b) => (b.events || 0) - (a.events || 0) || (a.short || a.name).localeCompare(b.short || b.name, 'tr'));
+  } else if (currentClubSort === 'recent') {
+    list.sort((a, b) => ((b.last?.date || '') + (b.last?.time || '')).localeCompare((a.last?.date || '') + (a.last?.time || '')));
+  } else if (currentClubSort === 'city') {
+    list.sort((a, b) => (a.city || '').localeCompare(b.city || '', 'tr') || (a.short || a.name).localeCompare(b.short || b.name, 'tr'));
+  }
+
+  if (countEl) {
+    countEl.textContent = q ? `(${list.length}/${clubs.length})` : `(${clubs.length})`;
+  }
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="club-empty">Aramanızla eşleşen kulüp bulunamadı.</div>';
+    return;
+  }
+
+  const soonCard = !q ? `<div class="card club soon">
+    <div class="c-head"><div class="nm">+ Kulüp ekleyin</div></div>
+    <div class="meta"><span class="c-city">Sonuçlarınızı yayımlayın</span></div>
+  </div>` : '';
+
+  grid.innerHTML = list.map(c => clubCardHtml(c)).join('') + soonCard;
+}
+
+function bindClubControls(clubs) {
+  const qInput = document.getElementById('club-q');
+  const chips = document.querySelectorAll('.sort-chip');
+
+  if (qInput) {
+    qInput.value = currentClubQuery;
+    qInput.addEventListener('input', e => {
+      currentClubQuery = e.target.value;
+      renderClubCards(clubs);
+    });
+    qInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        qInput.value = '';
+        currentClubQuery = '';
+        renderClubCards(clubs);
+      }
+    });
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const s = chip.dataset.sort;
+      if (chip.classList.contains('on')) {
+        if (s === 'az') {
+          currentClubSort = 'za';
+          chip.dataset.sort = 'za';
+          chip.textContent = 'Z → A';
+        } else if (s === 'za') {
+          currentClubSort = 'az';
+          chip.dataset.sort = 'az';
+          chip.textContent = 'A → Z';
+        }
+      } else {
+        chips.forEach(c => {
+          c.classList.remove('on');
+          c.setAttribute('aria-checked', 'false');
+          if (c.dataset.sort === 'za') {
+            c.dataset.sort = 'az';
+            c.textContent = 'A → Z';
+          }
+        });
+        chip.classList.add('on');
+        chip.setAttribute('aria-checked', 'true');
+        currentClubSort = s;
+      }
+      renderClubCards(clubs);
+    });
+  });
+}
+
 async function viewHome() {
   setTitle('');
   const clubs = await getJSON('/data/clubs.json');
@@ -156,12 +274,33 @@ async function viewHome() {
     <p class="sub">Sıralama, eller, double dummy ve atak analizi, eli tekrar oynama. Telefonda da rahat.</p>
     <input class="search" id="q" placeholder="İsim arayın" autocomplete="off">
     <div class="card results-list" id="qres" hidden></div>
-    <h2>Kulüpler</h2>
-    <div class="clubs">${clubs.map(c => `<a class="card club" href="${L('/kulup/' + c.slug)}" data-link><div class="nm">${esc(c.name)}</div><div class="meta">${esc(c.city || '')} · ${c.events} turnuva${c.last ? ' · son: ' + fmtDate(c.last.date) : ''}</div></a>`).join('')}
-      <div class="card club soon"><div class="nm">Kulübünüzü ekleyin</div><div class="meta">Sonuçlarınızı briçskor'da yayımlayın — kurulum gerektirmez.</div></div>
+
+    <div class="clubs-header">
+      <div class="clubs-title-row">
+        <h2>Kulüpler <span class="clubs-count" id="club-count">(${clubs.length})</span></h2>
+        <div class="club-filter-box">
+          <svg class="search-ico" viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2-4.35-4.35"/></svg>
+          <input type="search" id="club-q" class="club-filter-input" placeholder="Kulüp veya şehir ara…" autocomplete="off">
+        </div>
+      </div>
+      <div class="club-sort-row">
+        <span class="sort-label">Sırala:</span>
+        <div class="sort-chips" role="radiogroup" aria-label="Kulüp sıralama">
+          <button type="button" class="sort-chip ${currentClubSort === 'az' || currentClubSort === 'za' ? 'on' : ''}" data-sort="${currentClubSort === 'za' ? 'za' : 'az'}" aria-checked="${currentClubSort === 'az' || currentClubSort === 'za'}">${currentClubSort === 'za' ? 'Z → A' : 'A → Z'}</button>
+          <button type="button" class="sort-chip ${currentClubSort === 'events' ? 'on' : ''}" data-sort="events" aria-checked="${currentClubSort === 'events'}">En Çok Turnuva</button>
+          <button type="button" class="sort-chip ${currentClubSort === 'recent' ? 'on' : ''}" data-sort="recent" aria-checked="${currentClubSort === 'recent'}">En Yeni</button>
+          <button type="button" class="sort-chip ${currentClubSort === 'city' ? 'on' : ''}" data-sort="city" aria-checked="${currentClubSort === 'city'}">Şehir</button>
+        </div>
+      </div>
     </div>
+
+    <div class="clubs" id="clubs-grid"></div>
+
     <h2>Son turnuvalar</h2>
     <div class="card evlist">${latest.map(e => evRow(e.club, e, e.clubShort)).join('')}</div>`;
+
+  renderClubCards(clubs);
+  bindClubControls(clubs);
   bindSearch();
 }
 function evRow(club, e, clubLabel) {

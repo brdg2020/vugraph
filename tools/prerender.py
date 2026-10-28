@@ -110,14 +110,57 @@ write("app.html", page("", "briçskor — Kulüp briç turnuva sonuçları", "Br
                        '<div class="loading">Yükleniyor…</div>', index=False))
 
 # --- ana sayfa
+tr_order = "a b c ç d e f g ğ h ı i j k l m n o ö p r s ş t u ü v y z".split()
+tr_map = {c: i for i, c in enumerate(tr_order)}
+def tr_key(s):
+    return [tr_map.get(ch, ord(ch) + 1000) for ch in (s or "").lower()]
+
+clubs_az = sorted(clubs, key=lambda c: tr_key(c.get("short") or c["name"]))
+
+def prerender_club_card(c):
+    short_name = c.get("short") or c["name"]
+    last_str = ""
+    if c.get("last") and c["last"].get("date"):
+        try:
+            _, m, d = c["last"]["date"].split("-")
+            last_str = f'<span class="c-last">son: {int(d)} {MONTHS[int(m)-1][:3]}</span>'
+        except Exception:
+            pass
+    city = e(c.get("city") or "")
+    return (
+        f'<a class="card club" href="/kulup/{c["slug"]}" data-link title="{e(c["name"])}">'
+        f'<div class="c-head"><div class="nm">{e(short_name)}</div>'
+        f'<span class="c-badge" title="{c["events"]} turnuva">{c["events"]}</span></div>'
+        f'<div class="meta"><span class="c-city">{city}</span>{last_str}</div></a>'
+    )
+
+soon_card = ('<div class="card club soon"><div class="c-head"><div class="nm">+ Kulübünüzü ekleyin</div></div>'
+             '<div class="meta"><span class="c-city">Sonuçlarınızı yayımlayın</span></div></div>')
+
+clubs_markup = (
+    '<div class="clubs-header">'
+    '<div class="clubs-title-row">'
+    f'<h2>Kulüpler <span class="clubs-count" id="club-count">({len(clubs)})</span></h2>'
+    '<div class="club-filter-box">'
+    '<svg class="search-ico" viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2-4.35-4.35"/></svg>'
+    '<input type="search" id="club-q" class="club-filter-input" placeholder="Kulüp veya şehir ara…" autocomplete="off">'
+    '</div></div>'
+    '<div class="club-sort-row"><span class="sort-label">Sırala:</span>'
+    '<div class="sort-chips" role="radiogroup" aria-label="Kulüp sıralama">'
+    '<button type="button" class="sort-chip on" data-sort="az" aria-checked="true">A → Z</button>'
+    '<button type="button" class="sort-chip" data-sort="events" aria-checked="false">En Çok Turnuva</button>'
+    '<button type="button" class="sort-chip" data-sort="recent" aria-checked="false">En Yeni</button>'
+    '<button type="button" class="sort-chip" data-sort="city" aria-checked="false">Şehir</button>'
+    '</div></div></div>'
+    f'<div class="clubs" id="clubs-grid">{"".join(prerender_club_card(c) for c in clubs_az)}{soon_card}</div>'
+)
+
 latest = sorted([dict(c["last"], club=c["slug"], label=c.get("short") or c["name"]) for c in clubs if c.get("last")],
                 key=lambda x: (x.get("date") or "") + (x.get("time") or ""), reverse=True)
 home = ('<h1>Kulüp turnuva sonuçları</h1><p class="sub">Sıralama, eller, double dummy ve atak analizi, eli tekrar oynama. Telefonda da rahat.</p>'
         '<input class="search" id="q" placeholder="İsim arayın" autocomplete="off"><div class="card results-list" id="qres" hidden></div>'
-        '<h2>Kulüpler</h2><div class="clubs">'
-        + "".join(f'<a class="card club" href="/kulup/{c["slug"]}"><div class="nm">{e(c["name"])} skorları</div>'
-                  f'<div class="meta">{e(c.get("city"))} · {c["events"]} turnuva</div></a>' for c in clubs)
-        + '</div><h2>Son turnuvalar</h2><div class="card evlist">' + "".join(ev_row(x["club"], x, x["label"]) for x in latest) + "</div>")
+        + clubs_markup
+        + '<h2>Son turnuvalar</h2><div class="card evlist">' + "".join(ev_row(x["club"], x, x["label"]) for x in latest) + "</div>")
 names = ", ".join(c.get("short") or c["name"] for c in clubs)
 write("index.html", page("/", "briçskor — Briç kulüp skorları ve turnuva sonuçları",
                          f"Briç kulüplerinin güncel turnuva skorları: {names}. Sıralama, eller, double dummy analizi ve eli oynama.",
