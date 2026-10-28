@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>briçskor — Logo ve Favicon Tasarım Seçenekleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #0b5d3b;
+    --brand-dark: #074228;
+    --red: #d32f2f;
+    --gold: #d4a017;
+    --bg: #f8faf9;
+    --card: #ffffff;
+    --text: #1a202c;
+    --muted: #718096;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px 64px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  header { margin-bottom: 32px; text-align: center; }
+  h1 { font-size: 28px; font-weight: 800; color: var(--brand-dark); margin-bottom: 8px; }
+  p.lead { color: var(--muted); font-size: 15px; }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .card.active {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px rgba(11,93,59,0.2), 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #edf2f7;
+    color: var(--muted);
+  }
+  .card.active .tag {
+    background: #e6f4ea;
+    color: var(--brand);
+  }
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 38px;
+  }
+  
+  /* Icon showcase stage */
+  .stage {
+    background: #f1f5f3;
+    border-radius: 10px;
+    padding: 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .icon-lg { width: 72px; height: 72px; }
+  .icon-md { width: 36px; height: 36px; }
+  .icon-sm { width: 20px; height: 20px; }
+  
+  /* Navbar preview */
+  .preview-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .preview-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .nav-mock {
+    background: var(--brand);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .tab-mock {
+    background: #e2e8f0;
+    border-radius: 6px 6px 0 0;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #334155;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>briçskor — Logo & Favicon Seçenekleri</h1>
+    <p class="lead">Sitemiz için hazırlanan 4 farklı alternatif tasarım. Beğendiğiniz numarayı belirtebilirsiniz.</p>
+  </header>
+
+  <div class="grid">
+    <!-- SEÇENEK 1 -->
+    <div class="card active">
+      <div class="card-head">
+        <span class="card-title">1. Sade Zümrüt Rozet</span>
+        <span class="tag">Şu Anki</span>
+      </div>
+      <p class="card-desc">Klasik çuha yeşili yuvarlak kare üzerinde keskin beyaz maça (♠). Sade, yüksek kontrastlı ve her boyutta net.</p>
+      
+      <div class="stage">
+        <!-- 72px -->
+        <svg class="icon-lg" viewBox="0 0 512 512">
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f8552"/><stop offset="100%" stop-color="#074228"/>
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" rx="112" fill="url(#g1)"/>
+          <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="6"/>
+          <path fill="#fff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+        </svg>
+        <!-- 36px -->
+        <svg class="icon-md" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="url(#g1)"/>
+          <path fill="#fff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+        </svg>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-label">Menü Çubuğunda Görünüm</div>
+        <div class="nav-mock">
+          <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:#fff;color:#0b5d3b;">
+            <svg viewBox="0 0 512 512" width="16" height="16" fill="currentColor"><path d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></svg>
+          </span>
+          <span>briç<b style="font-weight:800">skor</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇENEK 2 -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">2. Dört Briç Rengi (4 Suits)</span>
+        <span class="tag">Renkli</span>
+      </div>
+      <p class="card-desc">Briçin 4 rengini (♠ ♥ ♦ ♣) 2x2 düzeninde birleştiren zengin, oyun kimliğini hemen yansıtan rozet.</p>
+      
+      <div class="stage">
+        <!-- 72px -->
+        <svg class="icon-lg" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#074228"/>
+          <!-- Spade top-left -->
+          <g transform="translate(80, 80) scale(0.3)">
+            <path fill="#ffffff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+          </g>
+          <!-- Heart top-right -->
+          <g transform="translate(280, 80) scale(0.3)">
+            <path fill="#ff5252" d="M256 448 C256 448 80 320 80 200 C80 130 130 80 190 80 C225 80 256 110 256 110 C256 110 287 80 322 80 C382 80 432 130 432 200 C432 320 256 448 256 448 Z"/>
+          </g>
+          <!-- Diamond bottom-left -->
+          <g transform="translate(80, 280) scale(0.3)">
+            <path fill="#ff5252" d="M256 64 L416 256 L256 448 L96 256 Z"/>
+          </g>
+          <!-- Club bottom-right -->
+          <g transform="translate(280, 280) scale(0.3)">
+            <path fill="#ffffff" d="M256 180 C280 180 300 160 300 136 C300 112 280 92 256 92 C232 92 212 112 212 136 C212 160 232 180 256 180 Z M330 220 C354 220 374 200 374 176 C374 152 354 132 330 132 C306 132 286 152 286 176 C286 200 306 220 330 220 Z M182 220 C206 220 226 200 226 176 C226 152 206 132 182 132 C158 132 138 152 138 176 C138 200 158 220 182 220 Z M270 230 C250 250 245 280 230 420 L282 420 C267 280 262 250 242 230 Z"/>
+          </g>
+        </svg>
+        <!-- 36px -->
+        <svg class="icon-md" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#074228"/>
+          <g transform="translate(80, 80) scale(0.3)"><path fill="#ffffff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></g>
+          <g transform="translate(280, 80) scale(0.3)"><path fill="#ff5252" d="M256 448 C256 448 80 320 80 200 C80 130 130 80 190 80 C225 80 256 110 256 110 C256 110 287 80 322 80 C382 80 432 130 432 200 C432 320 256 448 256 448 Z"/></g>
+          <g transform="translate(80, 280) scale(0.3)"><path fill="#ff5252" d="M256 64 L416 256 L256 448 L96 256 Z"/></g>
+          <g transform="translate(280, 280) scale(0.3)"><path fill="#ffffff" d="M256 180 C280 180 300 160 300 136 C300 112 280 92 256 92 C232 92 212 112 212 136 C212 160 232 180 256 180 Z M330 220 C354 220 374 200 374 176 C374 152 354 132 330 132 C306 132 286 152 286 176 C286 200 306 220 330 220 Z M182 220 C206 220 226 200 226 176 C226 152 206 132 182 132 C158 132 138 152 138 176 C138 200 158 220 182 220 Z M270 230 C250 250 245 280 230 420 L282 420 C267 280 262 250 242 230 Z"/></g>
+        </svg>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-label">Menü Çubuğunda Görünüm</div>
+        <div class="nav-mock">
+          <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:#fff;">
+            <svg viewBox="0 0 512 512" width="18" height="18">
+              <g transform="translate(50, 50) scale(0.35)"><path fill="#0b5d3b" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></g>
+              <g transform="translate(290, 50) scale(0.35)"><path fill="#d32f2f" d="M256 448 C256 448 80 320 80 200 C80 130 130 80 190 80 C225 80 256 110 256 110 C256 110 287 80 322 80 C382 80 432 130 432 200 C432 320 256 448 256 448 Z"/></g>
+              <g transform="translate(50, 290) scale(0.35)"><path fill="#d32f2f" d="M256 64 L416 256 L256 448 L96 256 Z"/></g>
+              <g transform="translate(290, 290) scale(0.35)"><circle cx="256" cy="180" r="60" fill="#0b5d3b"/><circle cx="180" cy="280" r="60" fill="#0b5d3b"/><circle cx="332" cy="280" r="60" fill="#0b5d3b"/><polygon points="256,260 216,420 296,420" fill="#0b5d3b"/></g>
+            </svg>
+          </span>
+          <span>briç<b style="font-weight:800">skor</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇENEK 3 -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">3. Çift İskambil Kartı & Pik</span>
+        <span class="tag">Kart</span>
+      </div>
+      <p class="card-desc">Hafif açılı üst üste iki iskambil kartı, öndeki kartın kalbinde yeşil maça. Vugraph ve masa heyecanını taşır.</p>
+      
+      <div class="stage">
+        <!-- 72px -->
+        <svg class="icon-lg" viewBox="0 0 512 512">
+          <defs>
+            <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f8552"/><stop offset="100%" stop-color="#074228"/>
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" rx="112" fill="url(#g3)"/>
+          <!-- Back card (rotated) -->
+          <rect x="150" y="80" width="220" height="310" rx="16" fill="#f1f5f3" transform="rotate(12 260 235)" stroke="#cbd5e1" stroke-width="4"/>
+          <!-- Front card -->
+          <rect x="130" y="100" width="220" height="310" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="4"/>
+          <!-- Spade on front card -->
+          <g transform="translate(160, 160) scale(0.32)">
+            <path fill="#0b5d3b" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+          </g>
+        </svg>
+        <!-- 36px -->
+        <svg class="icon-md" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="url(#g3)"/>
+          <rect x="150" y="80" width="220" height="310" rx="16" fill="#f1f5f3" transform="rotate(12 260 235)"/>
+          <rect x="130" y="100" width="220" height="310" rx="16" fill="#ffffff"/>
+          <g transform="translate(160, 160) scale(0.32)"><path fill="#0b5d3b" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></g>
+        </svg>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-label">Menü Çubuğunda Görünüm</div>
+        <div class="nav-mock">
+          <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:#fff;">
+            <svg viewBox="0 0 512 512" width="18" height="18">
+              <rect x="130" y="60" width="220" height="320" rx="20" fill="#e2e8f0" transform="rotate(12 240 220)"/>
+              <rect x="110" y="80" width="220" height="320" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="12"/>
+              <g transform="translate(140, 140) scale(0.32)"><path fill="#0b5d3b" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></g>
+            </svg>
+          </span>
+          <span>briç<b style="font-weight:800">skor</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇENEK 4 -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">4. Altın Çerçeveli Şampiyona</span>
+        <span class="tag">Prestij</span>
+      </div>
+      <p class="card-desc">Koyu orman yeşili çuha üzerine ince şampiyona altını (#d4a017) bordür ve merkezde beyaz maça. Resmi turnuva havası.</p>
+      
+      <div class="stage">
+        <!-- 72px -->
+        <svg class="icon-lg" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#063e25"/>
+          <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#d4a017" stroke-width="8"/>
+          <path fill="#ffffff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+        </svg>
+        <!-- 36px -->
+        <svg class="icon-md" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#063e25"/>
+          <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#d4a017" stroke-width="12"/>
+          <path fill="#ffffff" d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/>
+        </svg>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-label">Menü Çubuğunda Görünüm</div>
+        <div class="nav-mock">
+          <span style="display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:#063e25;border:1.5px solid #d4a017;color:#fff;">
+            <svg viewBox="0 0 512 512" width="16" height="16" fill="currentColor"><path d="M256 82 C238 154 124 230 124 320 C124 386 180 422 234 398 C224 428 198 444 174 450 L338 450 C314 444 288 428 278 398 C332 422 388 386 388 320 C388 230 274 154 256 82 Z"/></svg>
+          </span>
+          <span>briç<b style="font-weight:800">skor</b></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
