@@ -97,6 +97,7 @@ jobs:
           git config user.name "briçskor bot"
           git config user.email "actions@users.noreply.github.com"
           git commit -q -m "Günlük güncelleme $(TZ=Europe/Istanbul date +%F) — ${{ steps.scrape.outputs.yeni }} yeni turnuva"
+          git pull -q --rebase -X theirs origin main || true
           git push
 
       - name: Google'a anahtarsız giriş

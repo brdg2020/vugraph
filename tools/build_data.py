@@ -6,6 +6,7 @@ Kullanım: build_data.py <raw.json> <club_slug> <club_name> <out_public_dir>
 import json, re, subprocess, sys, tempfile, unicodedata, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rawstore
+from names import clean_name
 from collections import defaultdict
 
 DDRUN = os.environ.get("DDRUN", "/tmp/ddsbuild/ddrun")
@@ -289,7 +290,7 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
         seen_slugs.add(ev_slug)
         out = {
             "id": ev["id"], "slug": ev_slug, "club": club_slug, "clubName": club_name,
-            "name": tr_title(name) if name.islower() or name.isupper() else name,
+            "name": clean_name(name, date),
             "date": date, "time": time, "source": "vugraph",
             "movement": "howell" if any(p["dir"] == "NONE" for p in pairs.values()) else "mitchell",
             "pairs": [{k2: v for k2, v in p.items() if k2 != "raw"} for p in
