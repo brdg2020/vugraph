@@ -28,6 +28,9 @@ async function getJSON(url) {
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const L = p => (EMBED ? '/embed' : '') + p;
 const fmtPct = v => v == null || isNaN(v) ? '–' : (+v).toFixed(2);
+// pct: MP yüzdesi · imp: IMP · puan: takım/Lehman toplam puanı
+const fmtScore = (v, sc) => !sc || sc === 'pct' ? '%' + fmtPct(v) : (v == null || isNaN(v) ? '–' : String(+(+v).toFixed(2))) + (sc === 'imp' ? ' IMP' : ' puan');
+const unitOf = sc => !sc || sc === 'pct' ? '%' : sc === 'imp' ? 'IMP' : 'Puan';
 const fmtDate = d => { if (!d) return ''; const [y, m, dd] = d.split('-'); return `${+dd} ${MONTHS[+m - 1]} ${y}`; };
 const dowOf = d => { const x = new Date(d + 'T12:00:00'); return ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'][x.getDay()]; };
 const pctClass = v => v >= 60 ? 'pc-good' : v <= 40 ? 'pc-bad' : '';
@@ -308,7 +311,7 @@ function evRow(club, e, clubLabel) {
   return `<a class="ev" href="${L(`/kulup/${club}/${e.slug}`)}" data-link>
     <div class="dt"><div class="d">${+d || ''}</div><div class="m">${MON3[+m - 1] || ''}</div></div>
     <div><div class="nm">${esc(e.name)}</div><div class="meta">${clubLabel ? esc(clubLabel) + ' · ' : ''}${e.date ? dowOf(e.date) : ''} ${e.time || ''} · ${e.pairs} çift · ${e.boards} el</div></div>
-    <div class="win">1. <b>${esc((e.winner || []).join(' – '))}</b><br>%${fmtPct(e.winnerPct)}</div></a>`;
+    <div class="win">1. <b>${esc((e.winner || []).join(' – '))}</b><br>${fmtScore(e.winnerPct, e.scoring)}</div></a>`;
 }
 async function bindSearch() {
   const q = document.getElementById('q'), out = document.getElementById('qres');
@@ -422,7 +425,7 @@ async function viewTournament(club, slug, q) {
 function rankingHtml(ev) {
   let html = '';
   for (const [g, list] of groupsOf(ev)) {
-    html += `<div class="card" style="margin-bottom:14px"><div class="sect-title">${esc(g)}</div><div class="tbl-wrap"><table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num hide-sm">No</th><th class="num">%</th></tr></thead><tbody>
+    html += `<div class="card" style="margin-bottom:14px"><div class="sect-title">${esc(g)}</div><div class="tbl-wrap"><table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num hide-sm">No</th><th class="num">${unitOf(ev.scoring)}</th></tr></thead><tbody>
       ${list.map(p => `<tr class="click" data-href="${pairLink(ev, p)}"><td><span class="rank r${p.rank}">${p.rank}</span></td><td class="names">${namesHtml(p)}<div class="bar"><i style="width:${Math.max(0, Math.min(100, (p.pct - 30) / 40 * 100))}%"></i></div></td><td class="num hide-sm muted">${p.no}</td><td class="num pct ${pctClass(p.pct)}">${fmtPct(p.pct)}</td></tr>`).join('')}
     </tbody></table></div></div>`;
   }
@@ -445,7 +448,7 @@ function topContract(b) {
 }
 function scorecardsIndex(ev) {
   let html = '';
-  for (const [g, list] of groupsOf(ev)) html += `<div class="card" style="margin-bottom:14px"><div class="sect-title">${esc(g)}</div><div class="evlist">${list.map(p => `<a class="ev" href="${pairLink(ev, p)}" data-link style="grid-template-columns:40px 1fr auto"><span class="rank r${p.rank}">${p.rank}</span><div class="nm">${esc(p.names.join(' – '))}</div><div class="pct ${pctClass(p.pct)}">%${fmtPct(p.pct)}</div></a>`).join('')}</div></div>`;
+  for (const [g, list] of groupsOf(ev)) html += `<div class="card" style="margin-bottom:14px"><div class="sect-title">${esc(g)}</div><div class="evlist">${list.map(p => `<a class="ev" href="${pairLink(ev, p)}" data-link style="grid-template-columns:40px 1fr auto"><span class="rank r${p.rank}">${p.rank}</span><div class="nm">${esc(p.names.join(' – '))}</div><div class="pct ${pctClass(p.pct)}">${fmtScore(p.pct, ev.scoring)}</div></a>`).join('')}</div></div>`;
   return html;
 }
 function matrixHtml(ev) {
@@ -615,6 +618,14 @@ async function viewPair(club, slug, key) {
   const pm = pairMap(ev); const p = pm[key];
   if (!p) return notFound();
   setTitle(`${p.names.join(' – ')} — ${ev.name} ${fmtDate(ev.date)}`);
+  if (!p.boards.length) {
+    $app.innerHTML = tourHeader(ev, 'kartlar') + `<h2 style="margin-top:0">${namesHtml(p)}</h2>
+      <p class="sub">${p.rank}. sıra · ${fmtScore(p.pct, ev.scoring)}</p>
+      <div class="card pad"><p>Bu turnuva türünde (takım / Lehman) vugraph çift bazında el el sonuç yayımlamıyor.
+      Elleri, masalarda oynanan kontratları ve double dummy analizini <a href="${L(`/kulup/${club}/${slug}/el/1`)}" data-link>el sayfasından</a> görebilirsiniz.</p></div>
+      ${EMBED ? embedFoot() : ''}`;
+    return;
+  }
   let decl = [], def = [], leads = [], lost = 0;
   const rowsHtml = p.boards.map(x => {
     const b = ev.boards.find(bb => bb.b === x.b && bb.sec === p.sec);
@@ -641,7 +652,7 @@ async function viewPair(club, slug, key) {
   const dDecl = sumDD(decl), dDef = -sumDD(def);
   $app.innerHTML = tourHeader(ev, 'kartlar') + `
     <h2 style="margin-top:0">${namesHtml(p)}</h2>
-    <p class="sub">${p.rank}. sıra · %${fmtPct(p.pct)} · ${p.grp || (p.dir === 'NS' ? 'Kuzey-Güney' : p.dir === 'EW' ? 'Doğu-Batı' : '')}</p>
+    <p class="sub">${p.rank}. sıra · ${fmtScore(p.pct, ev.scoring)} · ${p.grp || (p.dir === 'NS' ? 'Kuzey-Güney' : p.dir === 'EW' ? 'Doğu-Batı' : '')}</p>
     <div class="stats">
       <div class="card stat"><div class="k">Deklaran</div><div class="v">%${fmtPct(avg(decl))}</div><div class="sx">${decl.length} el</div></div>
       <div class="card stat"><div class="k">Savunma</div><div class="v">%${fmtPct(avg(def))}</div><div class="sx">${def.length} el</div></div>
@@ -658,10 +669,11 @@ async function viewPair(club, slug, key) {
 async function viewPlayer(slug) {
   const shard = await getJSON(`/data/p/${slug[0]}.json`); const p = shard[slug]; if (!p) return notFound();
   setTitle(`${p.name} — briç turnuva sonuçları`);
-  const evs = p.events;
+  const evsAll = p.events;
+  const evs = evsAll.filter(e => !e.sc || e.sc === 'pct');  // istatistik yalnız MP yüzdeli turnuvalardan
   const avg = evs.reduce((s, e) => s + e.pct, 0) / (evs.length || 1);
   const best = [...evs].sort((a, b) => b.pct - a.pct)[0];
-  const wins = evs.filter(e => e.rank === 1).length;
+  const wins = evsAll.filter(e => e.rank === 1).length;
   const partners = new Map(); evs.forEach(e => { const k = e.partner; if (!partners.has(k)) partners.set(k, []); partners.get(k).push(e.pct); });
   const pList = [...partners.entries()].map(([n, a]) => ({ n, c: a.length, avg: a.reduce((s, x) => s + x, 0) / a.length })).sort((a, b) => b.c - a.c);
   const clubsAll = await getJSON('/data/clubs.json');
@@ -675,7 +687,7 @@ async function viewPlayer(slug) {
   $app.innerHTML = `
     <div class="crumb"><a href="/oyuncular" data-link>Oyuncular</a>›</div>
     <h1>${esc(p.name)}</h1>
-    <p class="sub">${evs.length} turnuva · ${[...new Set(evs.map(e => e.clubName))].join(', ')}</p>
+    <p class="sub">${evsAll.length} turnuva · ${[...new Set(evsAll.map(e => e.clubName))].join(', ')}</p>
     <div class="stats">
       <div class="card stat"><div class="k">Ortalama</div><div class="v">%${fmtPct(avg)}</div></div>
       <div class="card stat"><div class="k">En iyi</div><div class="v">%${fmtPct(best?.pct)}</div><div class="sx">${best ? fmtDate(best.date) : ''}</div></div>
@@ -686,7 +698,7 @@ async function viewPlayer(slug) {
     ${chron.length > 1 ? `<h2>Gidişat</h2><div class="card pad"><svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${ys(50)}" y2="${ys(50)}" stroke="currentColor" opacity=".15" stroke-dasharray="4 4"/><path d="${path}" fill="none" stroke="var(--brand)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>${chron.map((e, i) => `<circle cx="${xs(i)}" cy="${ys(e.pct)}" r="3.5" fill="var(--brand)"><title>${fmtDate(e.date)} · %${fmtPct(e.pct)}</title></circle>`).join('')}</svg><div class="note">Kesikli çizgi: %50</div></div>` : ''}
     <h2>Turnuvalar</h2>
     <div class="card tbl-wrap"><table class="t"><thead><tr><th>Tarih</th><th>Turnuva</th><th>Partner</th><th class="num">Sıra</th><th class="num">%</th></tr></thead><tbody>
-    ${evs.map(e => `<tr class="click" data-href="${L(`/kulup/${e.club}/${e.t}/cift/${e.pair}`)}"><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${esc(e.name)}<div class="note">${esc(e.clubName)}</div></td><td>${esc(e.partner)}</td><td class="num">${e.rank}/${e.field}</td><td class="num pct ${pctClass(e.pct)}">${fmtPct(e.pct)}</td></tr>`).join('')}
+    ${evsAll.map(e => `<tr class="click" data-href="${L(`/kulup/${e.club}/${e.t}/cift/${e.pair}`)}"><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${esc(e.name)}<div class="note">${esc(e.clubName)}</div></td><td>${esc(e.partner)}</td><td class="num">${e.rank}/${e.field}</td><td class="num pct ${!e.sc || e.sc === 'pct' ? pctClass(e.pct) : ''}">${!e.sc || e.sc === 'pct' ? fmtPct(e.pct) : fmtScore(e.pct, e.sc)}</td></tr>`).join('')}
     </tbody></table></div>
     <h2>Partnerler</h2>
     <div class="card tbl-wrap"><table class="t"><thead><tr><th>Partner</th><th class="num">Turnuva</th><th class="num">Ort. %</th></tr></thead><tbody>${pList.map(x => `<tr><td>${esc(x.n)}</td><td class="num">${x.c}</td><td class="num pct ${pctClass(x.avg)}">${fmtPct(x.avg)}</td></tr>`).join('')}</tbody></table></div>`;

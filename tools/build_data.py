@@ -77,6 +77,25 @@ def to_float(s):
         return None
 
 
+_DIRS = {"Kuzey", "Doğu", "Güney", "Batı"}
+_VUL = {"Kimse", "Herkes", "K - G", "D - B"}
+
+
+def _bad_boards(boards):
+    """Takım/Lehman turnuvalarında vugraph çift özeti yerine zon tablosu okunuyor (rakip "Kuzey", skor "Kimse")."""
+    return any(b.get("opp") in _DIRS and b.get("score") in _VUL for b in boards)
+
+
+def _scoring(name, pairs, broken):
+    """pct: MP yüzdesi · imp: IMP · puan: takım/Lehman toplam puanı."""
+    if re.search(r"imp|butler", name or "", re.I):
+        return "imp"
+    ps = [p["pct"] for p in pairs if p.get("pct") is not None]
+    if broken or re.search(r"lehman|leh-|takım", name or "", re.I) or (ps and (min(ps) < 0 or max(ps) > 100)):
+        return "puan"
+    return "pct"
+
+
 def parse_title(t):
     m = re.match(r"^(.*?)\s*Sonuçları\s*\((\d\d)-(\d\d)-(\d{4})\s+(\d\d:\d\d)\)", t)
     if not m:
@@ -154,7 +173,10 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
             continue
         # --- pairs
         pairs = {}
+        broken = any(_bad_boards(p.get("boards") or []) for p in ev["pairs"])
         for p in ev["pairs"]:
+            if broken:
+                p = dict(p, boards=[])  # takım/Lehman: vugraph çift özeti el el sonuç vermiyor
             key = f"{p['sec']}{p['dir'][0] if p['dir'] != 'NONE' else 'H'}{p['no']}"
             names = [tr_title(x) for x in re.split(r"\s+-\s+", p["names"]) if x.strip()]
             pairs[key] = {
@@ -291,7 +313,7 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
         out = {
             "id": ev["id"], "slug": ev_slug, "club": club_slug, "clubName": club_name,
             "name": clean_name(name, date),
-            "date": date, "time": time, "source": "vugraph",
+            "date": date, "time": time, "source": "vugraph", "scoring": _scoring(name, ev["pairs"], broken),
             "movement": "howell" if any(p["dir"] == "NONE" for p in pairs.values()) else "mitchell",
             "pairs": [{k2: v for k2, v in p.items() if k2 != "raw"} for p in
                       sorted(pairs.values(), key=lambda p: (p["sec"], p["grp"], p["rank"]))],
@@ -308,6 +330,7 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
             "id": ev["id"], "slug": ev_slug, "name": out["name"], "date": date, "time": time,
             "pairs": len(pairs), "boards": len(boards),
             "winner": top[0]["names"] if top else [], "winnerPct": top[0]["pct"] if top else None,
+            "scoring": out["scoring"],
         })
         for p in pairs.values():
             for nm, sl in zip(p["names"], p["slugs"]):
@@ -316,7 +339,7 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
                 partner = [n for n in p["names"] if n != nm]
                 pl["events"].append({"club": club_slug, "clubName": club_name, "t": ev_slug, "name": out["name"],
                                      "date": date, "pair": p["key"], "partner": partner[0] if partner else "",
-                                     "pct": p["pct"], "rank": p["rank"], "grp": p["grp"] or p["dir"],
+                                     "pct": p["pct"], "sc": out["scoring"], "rank": p["rank"], "grp": p["grp"] or p["dir"],
                                      "field": sum(1 for q in pairs.values() if q["grp"] == p["grp"])})
 
     events_out.sort(key=lambda e: (e["date"] or "", e["time"] or ""), reverse=True)

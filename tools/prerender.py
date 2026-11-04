@@ -46,10 +46,10 @@ def is_imp(ev):
 
 
 def fmt_score(ev, pct):
-    if is_imp(ev):
-        v = round(pct, 2)
-        return f"{v:g} IMP"
-    return f"%{pct:.2f}"
+    sc = ev.get("scoring") or ("imp" if is_imp(ev) else "pct")
+    if sc == "pct":
+        return f"%{pct:.2f}"
+    return f"{round(pct, 2):g} " + ("IMP" if sc == "imp" else "puan")
 
 def page(path, title, desc, content, index=True, jsonld=None):
     out = TPL
@@ -73,7 +73,7 @@ def ev_row(club, ev, label=""):
     return (f'<a class="ev" href="/kulup/{club}/{ev["slug"]}"><div class="dt"><div class="d">{int(d) if d else ""}</div>'
             f'<div class="m">{MONTHS[int(m) - 1][:3] if m and m != "0" else ""}</div></div>'
             f'<div><div class="nm">{e(ev["name"])}</div><div class="meta">{meta} · {ev["pairs"]} çift · {ev["boards"]} el</div></div>'
-            f'<div class="win">1. <b>{e(" – ".join(ev.get("winner") or []))}</b><br>%{ev.get("winnerPct") or ""}</div></a>')
+            f'<div class="win">1. <b>{e(" – ".join(ev.get("winner") or []))}</b><br>{fmt_score(ev, ev["winnerPct"]) if ev.get("winnerPct") is not None else ""}</div></a>')
 
 
 def ranking(ev):
@@ -90,7 +90,7 @@ def ranking(ev):
             + " – ".join(f'<a href="/oyuncu/{s}">{e(n)}</a>' for n, s in zip(p["names"], p["slugs"]))
             + f'</td><td class="num pct">{p["pct"]:.2f}</td></tr>' for p in lst)
         out += (f'<div class="card" style="margin-bottom:14px"><div class="sect-title">{e(g)}</div><div class="tbl-wrap">'
-                f'<table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num">%</th></tr></thead><tbody>{rows}</tbody></table></div></div>')
+                f'<table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num">{"%" if ev.get("scoring", "pct") == "pct" else ("IMP" if ev.get("scoring") == "imp" else "Puan")}</th></tr></thead><tbody>{rows}</tbody></table></div></div>')
     return out
 
 
