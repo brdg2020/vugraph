@@ -8,7 +8,7 @@ Kullanım: prerender.py public [site_url]
 - public/app.html              diğer tüm yollar için (noindex) uygulama kabuğu
 - public/sitemap.xml, public/robots.txt
 """
-import html, json, os, sys
+import html, json, os, re, sys
 from datetime import date
 
 PUB = sys.argv[1]
@@ -30,6 +30,26 @@ def dow(d):
     y, m, dd = map(int, d.split("-"))
     return DAYS[date(y, m, dd).weekday()]
 
+
+
+def brand(c):
+    """Google başlığı için kısa kulüp adı: "Yalıkavak İhtisas Briç", "Major Boğaziçi Briç"."""
+    b = re.sub(r"\s*\(.*?\)", "", c.get("short") or c["name"]).strip()
+    return b if "briç" in b.lower() else b + " Briç"
+
+
+def is_imp(ev):
+    if re.search(r"imp|lehman|butler|takım|pairs", ev.get("name") or "", re.I):
+        return True
+    ps = [p["pct"] for p in ev.get("pairs", []) if p.get("pct") is not None]
+    return bool(ps) and (min(ps) < 0 or max(ps) > 100)
+
+
+def fmt_score(ev, pct):
+    if is_imp(ev):
+        v = round(pct, 2)
+        return f"{v:g} IMP"
+    return f"%{pct:.2f}"
 
 def page(path, title, desc, content, index=True, jsonld=None):
     out = TPL
@@ -180,8 +200,8 @@ for c in clubs:
             + '<details class="arsiv"><summary>Tüm turnuvalar</summary><div class="card evlist">'
             + "".join(ev_row(slug, x) for x in evs) + "</div></details>")
     short = c.get("short") or name
-    title = f"{name} Skorları – Güncel Turnuva Sonuçları | briçskor"
-    desc = (f"{short} briç turnuva skorları: " + (f"son turnuva {evs[0]['name']} ({fdate(evs[0]['date'])}). " if evs else "")
+    title = f"{brand(c)} Skorları – Güncel Turnuva Sonuçları | briçskor"
+    desc = (f"{brand(c)} turnuva skorları: " + (f"son turnuva {evs[0]['name']} ({fdate(evs[0]['date'])}). " if evs else "")
             + "Sıralama, eller, double dummy analizi, skor kartları ve eli tekrar oynama.")
     ld = {"@context": "https://schema.org", "@type": "SportsOrganization", "name": name, "sport": "Bridge",
           "url": f"{SITE}/kulup/{slug}", **({"sameAs": [c["site"]]} if c.get("site") else {}),
@@ -211,10 +231,10 @@ for c in clubs:
                 f'<h1>{e(ev["name"])}</h1><p class="sub">{fdate(ev["date"])}, {dow(ev["date"]) if ev.get("date") else ""} {e(ev.get("time"))} · '
                 f'{len(ev["pairs"])} çift · {len(ev["boards"])} el</p>' + ranking(ev)
                 + f'<div class="row"><a class="btn sm primary" href="/kulup/{slug}/{ev["slug"]}/el/1">Elleri gör ›</a></div>')
-        title = f"{ev['name']} {fdate(ev['date'])} Sonuçları – {short} Skorları"
+        title = f"{brand(c)} – {ev['name']} ({fdate(ev['date'])}) Sonuçları"
         win = next((p for p in ev["pairs"] if p["rank"] == 1), None)
-        desc = (f"{short} {ev['name']} {fdate(ev['date'])} briç turnuvası sonuçları"
-                + (f": 1. {' – '.join(win['names'])} (%{win['pct']:.2f})." if win else ".") + " Eller, double dummy ve skor kartları.")
+        desc = (f"{brand(c)} turnuvası: {ev['name']}, {fdate(ev['date'])}. Sonuçlar"
+                + (f" – 1. {' – '.join(win['names'])} ({fmt_score(ev, win['pct'])})." if win else ".") + " Eller, double dummy ve skor kartları.")
         ld = {"@context": "https://schema.org", "@type": "SportsEvent", "name": f"{ev['name']} – {name}",
               "startDate": f"{ev['date']}T{ev.get('time') or '00:00'}:00+03:00", "sport": "Bridge",
               "eventStatus": "https://schema.org/EventScheduled",
