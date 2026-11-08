@@ -16,7 +16,19 @@ window.bricskorScrape = async function (clubs, opts = {}) {
     const B = '/' + club + '/';
     const d = await get(B + 'eventresults.php?event=' + id);
     const title = tx(d.querySelector('h3')); const pairs = []; let grp = '';
-    d.querySelectorAll('tr').forEach(tr => { const oc = tr.getAttribute('onclick'); if (!oc) { if (tr.cells.length === 1) grp = tx(tr); return; } const m = oc.match(/section.(\w+).*?pair.(\d+).*?direction.(NS|EW|NONE)/); if (m) { const c = [...tr.cells].map(tx); pairs.push({ sec: m[1], no: +m[2], dir: m[3], grp, rank: +c[0], names: c[1], pct: parseFloat(c[2]) }); } });
+    const isLehman = [...d.querySelectorAll('td.captL, th.captL')].some(td => /Doğu\s*-\s*Batı/i.test(td.textContent));
+    d.querySelectorAll('tr').forEach(tr => {
+      const oc = tr.getAttribute('onclick');
+      if (!oc) { if (tr.cells.length === 1) grp = tx(tr); return; }
+      const m = oc.match(/section.(\w+).*?pair.(\d+).*?direction.(NS|EW|NONE)/);
+      if (m) {
+        const c = [...tr.cells].map(tx);
+        pairs.push({ sec: m[1], no: +m[2], dir: m[3], grp: isLehman ? 'Kuzey - Güney' : grp, rank: +c[0], names: c[1], pct: parseFloat(c[2]) });
+        if (isLehman && c.length >= 5 && m[3] === 'NS' && c[3] && !isNaN(parseFloat(c[4]))) {
+          pairs.push({ sec: m[1], no: +m[2], dir: 'EW', grp: 'Doğu - Batı', rank: +c[0], names: c[3], pct: parseFloat(c[4]) });
+        }
+      }
+    });
     for (const p of pairs) { const s = await get(B + 'pairsummary.php?event=' + id + '&section=' + p.sec + '&pair=' + p.no + '&direction=' + p.dir); p.boards = []; s.querySelectorAll('tr').forEach(tr => { const c = [...tr.cells].map(tx); if (c.length >= 4 && /^\d+$/.test(c[0])) p.boards.push({ b: +c[0], opp: c[1], score: c[2], pct: parseFloat(c[3]) }); }); }
     const boardSet = new Map(); pairs.forEach(p => p.boards.forEach(x => { if (!boardSet.has(x.b)) boardSet.set(x.b, p); }));
     const boards = {};

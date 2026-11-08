@@ -9,7 +9,8 @@ import rawstore
 from names import clean_name
 from collections import defaultdict
 
-DDRUN = os.environ.get("DDRUN", "/tmp/ddsbuild/ddrun")
+BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin", "ddrun")
+DDRUN = os.environ.get("DDRUN", BIN if os.path.exists(BIN) else "/tmp/ddsbuild/ddrun")
 SEATS = "NESW"
 STRAINS = "SHDCN"  # DDS strain order
 
@@ -161,7 +162,26 @@ AMBIG = []
 PLAYERS = defaultdict(lambda: {"name": "", "events": []})
 
 
-def build(raw, club_slug, club_name, out_dir, raw_hints=None):
+def collect_simultane_pool(clubs):
+    """Simultane turnuvalarda tüm Türkiye aynı elleri oynar. El kağıdı yüklemeyen kulüpler için ortak havuz oluşturur."""
+    pool = defaultdict(dict)
+    for c in clubs:
+        raw, _ = rawstore.load(c)
+        for ev in raw.values():
+            name, dt, tm = parse_title(ev["title"])
+            if not dt or not re.search(r"simultane|smlt|sim\b", name, re.I):
+                continue
+            is_eve = bool(re.search(r"aksam|akşam", name, re.I) or (tm and int(tm.split(":")[0]) >= 18))
+            for bd in ev.get("boards", {}).values():
+                b = bd.get("b")
+                hands = {s: bd["hands"][s]["cards"] for s in SEATS if s in bd.get("hands", {})}
+                if len(hands) == 4 and any(any(suit) for suit in hands.values()):
+                    if b not in pool[(dt, is_eve)]:
+                        pool[(dt, is_eve)][b] = hands
+    return pool
+
+
+def build(raw, club_slug, club_name, out_dir, raw_hints=None, sim_pool=None):
     events_out = []
     seen_slugs = set()
     players = PLAYERS
@@ -209,6 +229,19 @@ def build(raw, club_slug, club_name, out_dir, raw_hints=None):
                     "ns": None, "ew": None,
                 })
             boards[b] = {"sec": "A", "b": b, "dealer": SEATS[dealer], "vul": vul, "hands": hands, "rows": rows}
+
+        # Simultane turnuvalarda el kağıtları boşsa havuzdan tamamla
+        is_sim = bool(re.search(r"simultane|smlt|sim\b", name, re.I))
+        is_eve = bool(re.search(r"aksam|akşam", name, re.I) or (time and int(time.split(":")[0]) >= 18))
+        if is_sim and sim_pool:
+            pool_boards = sim_pool.get((date, is_eve))
+            if not pool_boards and (date, not is_eve) in sim_pool:
+                if len([k for k in sim_pool if k[0] == date]) == 1:
+                    pool_boards = sim_pool[(date, not is_eve)]
+            if pool_boards:
+                for b, bd in boards.items():
+                    if not any(any(suit) for suit in bd["hands"].values()) and b in pool_boards:
+                        bd["hands"] = pool_boards[b]
 
         # --- masaları kur: (K-G çifti, D-B çifti, K-G skoru, K-G %)
         def opp_key(p, name):
@@ -370,12 +403,13 @@ if __name__ == "__main__":
     cfg_path, out_dir = sys.argv[1], sys.argv[2]
     base = os.path.dirname(os.path.abspath(cfg_path))
     clubs = json.load(open(cfg_path))
+    sim_pool = collect_simultane_pool(clubs)
     meta = []
     for c in clubs:
         raw, hints = rawstore.load(c)
         if not raw:
             print("veri yok, atlandı:", c["slug"]); continue
-        evs = build(raw, c["slug"], c["name"], out_dir, hints)
+        evs = build(raw, c["slug"], c["name"], out_dir, hints, sim_pool)
         print(c["slug"], len(evs), "turnuva")
         m = {k: c.get(k) for k in ("slug", "name", "short", "city", "site", "aliases", "index", "tbf")} | \
             {"events": len(evs), "last": evs[0] if evs else None}

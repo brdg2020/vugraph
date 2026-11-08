@@ -86,12 +86,14 @@ def ranking(ev):
     for g, lst in groups.items():
         lst.sort(key=lambda p: p["rank"])
         rows = "".join(
-            f'<tr><td><span class="rank r{p["rank"]}">{p["rank"]}</span></td><td class="names">'
-            + " – ".join(f'<a href="/oyuncu/{s}">{e(n)}</a>' for n, s in zip(p["names"], p["slugs"]))
-            + f'</td><td class="num pct">{p["pct"]:.2f}</td></tr>' for p in lst)
+            f'<tr class="click" data-href="/kulup/{ev["club"]}/{ev["slug"]}/cift/{p["key"]}">'
+            f'<td><span class="rank r{p["rank"]}">{p["rank"]}</span></td>'
+            f'<td class="names">' + " – ".join(f'<a href="/oyuncu/{s}">{e(n)}</a>' for n, s in zip(p["names"], p["slugs"])) + f'</td>'
+            f'<td class="num hide-sm muted">{p.get("no", "")}</td>'
+            f'<td class="num pct">{p["pct"]:.2f}</td></tr>' for p in lst)
         out += (f'<div class="card" style="margin-bottom:14px"><div class="sect-title">{e(g)}</div><div class="tbl-wrap">'
-                f'<table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num">{"%" if ev.get("scoring", "pct") == "pct" else ("IMP" if ev.get("scoring") == "imp" else "Puan")}</th></tr></thead><tbody>{rows}</tbody></table></div></div>')
-    return out
+                f'<table class="t"><thead><tr><th>#</th><th>Çift</th><th class="num hide-sm">No</th><th class="num">{"%" if ev.get("scoring", "pct") == "pct" else ("IMP" if ev.get("scoring") == "imp" else "Puan")}</th></tr></thead><tbody>{rows}</tbody></table></div></div>')
+    return out + '<p class="note">Bir çifte dokunun: el el skor kartı ve kişisel analiz.</p>'
 
 
 DOW = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
@@ -193,16 +195,42 @@ for c in clubs:
     slug, name = c["slug"], c["name"]
     idx = json.load(open(os.path.join(PUB, "data", slug, "index.json")))
     evs = idx["events"]
+    latest_html = ""
+    if evs:
+        latest_file = os.path.join(PUB, "data", slug, "t", evs[0]["slug"] + ".json")
+        if os.path.exists(latest_file):
+            latest_ev = json.load(open(latest_file))
+            first_b = (latest_ev.get("boards") or [{}])[0].get("b", 1)
+            first_key = (latest_ev.get("boards") or [{}])[0].get("key") or str(first_b)
+            prev_rows = "".join(ev_row(slug, x) for x in evs[1:4])
+            prev_html = f'<h2>Önceki turnuvalar</h2><div class="card evlist" style="margin-bottom:24px">{prev_rows}</div>' if prev_rows else ""
+            latest_html = (
+                f'<h2>Son turnuva: {e(latest_ev["name"])} · {fdate(latest_ev["date"])}</h2>'
+                + ranking(latest_ev)
+                + f'<div class="row" style="margin-bottom:24px">'
+                f'<a class="btn primary sm" href="/kulup/{slug}/{latest_ev["slug"]}/el/{first_key}">Elleri gör ›</a>'
+                f'<a class="btn sm" href="/kulup/{slug}/{latest_ev["slug"]}">Turnuvaya git ›</a>'
+                f'</div>'
+                + prev_html
+            )
     body = (f'<div class="crumb"><a href="/">Kulüpler</a>›</div><h1 class="club-h">{e(name)} skorları</h1>'
-            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva</p>'
+            f'<p class="sub">{e(c.get("city"))} · {len(evs)} turnuva · vugraph sonuçları</p>'
             + (f'<nav class="tabs"><a class="on" href="/kulup/{slug}">Turnuvalar</a><a href="/kulup/{slug}/mp-siralamasi">MP sıralaması</a></nav>' if c.get("mp") else "")
+            + latest_html
+            + "<h2>Turnuva takvimi</h2>"
             + calendar(slug, evs)
             + '<details class="arsiv"><summary>Tüm turnuvalar</summary><div class="card evlist">'
             + "".join(ev_row(slug, x) for x in evs) + "</div></details>")
     short = c.get("short") or name
     title = f"{brand(c)} Skorları – Güncel Turnuva Sonuçları | briçskor"
-    desc = (f"{brand(c)} turnuva skorları: " + (f"son turnuva {evs[0]['name']} ({fdate(evs[0]['date'])}). " if evs else "")
-            + "Sıralama, eller, double dummy analizi, skor kartları ve eli tekrar oynama.")
+    b_clean = re.sub(r"(?i)\s+briç.*$", "", short).strip()
+    if evs:
+        winner = " – ".join(evs[0].get("winner") or [])
+        desc = (f"{b_clean} briç skorları: son turnuva {evs[0]['name']} ({fdate(evs[0]['date'])})"
+                + (f" – 1. {winner}." if winner else ".")
+                + " Tüm turnuva sonuçları, eller ve double dummy analizi.")
+    else:
+        desc = f"{b_clean} briç skorları: Tüm turnuva sonuçları, eller ve double dummy analizi."
     ld = {"@context": "https://schema.org", "@type": "SportsOrganization", "name": name, "sport": "Bridge",
           "url": f"{SITE}/kulup/{slug}", **({"sameAs": [c["site"]]} if c.get("site") else {}),
           **({"address": {"@type": "PostalAddress", "addressLocality": c["city"].split("·")[-1].strip(), "addressCountry": "TR"}} if c.get("city") else {})}

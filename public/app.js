@@ -338,11 +338,37 @@ async function viewClub(club, q) {
   setTitle(`${idx.name} Skorları – Güncel Turnuva Sonuçları`);
   const months = [...new Set(idx.events.map(e => e.date?.slice(0, 7)).filter(Boolean))].sort().reverse();
   const ym = q.get('ay') || months[0] || new Date().toISOString().slice(0, 7);
+
+  let latestHtml = '';
+  if (idx.events && idx.events.length > 0) {
+    try {
+      const latestEv = await loadEvent(club, idx.events[0].slug);
+      const firstBoardKey = latestEv.boards?.[0] ? boardKey(latestEv.boards[0]) : '1';
+      const prevEvs = idx.events.slice(1, 4);
+      const prevHtml = prevEvs.length
+        ? `<h2>Önceki turnuvalar</h2><div class="card evlist" style="margin-bottom:24px">${prevEvs.map(e => evRow(club, e)).join('')}</div>`
+        : '';
+      latestHtml = `
+        <h2>Son turnuva: ${esc(latestEv.name)} · ${fmtDate(latestEv.date)}</h2>
+        ${rankingHtml(latestEv)}
+        <div class="row" style="margin-bottom:24px">
+          <a class="btn primary sm" href="${L(`/kulup/${club}/${latestEv.slug}/el/${firstBoardKey}`)}" data-link>Elleri gör ›</a>
+          <a class="btn sm" href="${L(`/kulup/${club}/${latestEv.slug}`)}" data-link>Turnuvaya git ›</a>
+        </div>
+        ${prevHtml}
+      `;
+    } catch (e) {
+      console.error('Son turnuva yüklenemedi:', e);
+    }
+  }
+
   $app.innerHTML = `
     ${EMBED ? '' : `<div class="crumb"><a href="/" data-link>Kulüpler</a>›</div>`}
     <h1 class="club-h">${esc(idx.name)} skorları</h1>
-    <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
+    <p class="sub">${info ? esc(info.city) + ' · ' : ''}${idx.events.length} turnuva · vugraph sonuçları${info?.site && !EMBED ? ` · <a href="${info.site}" rel="noopener">kulüp sitesi</a>` : ''}</p>
     ${clubTabs(club, info, 't')}
+    ${latestHtml}
+    <h2>Turnuva takvimi</h2>
     ${calendarHtml(club, idx.events, ym, months)}
     ${EMBED ? embedFoot() : ''}`;
 }
@@ -719,6 +745,7 @@ async function route() {
   EMBED = path.startsWith('/embed');
   document.body.classList.toggle('embed', EMBED);
   if (EMBED) path = path.slice(6) || '/';
+  path = path.replace(/\.html$/, '');
   const q = new URLSearchParams(location.search);
   const seg = path.split('/').filter(Boolean).map(decodeURIComponent);
   try {
