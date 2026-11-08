@@ -628,7 +628,7 @@ async function viewPair(club, slug, key) {
   }
   let decl = [], def = [], leads = [], lost = 0;
   const rowsHtml = p.boards.map(x => {
-    const b = ev.boards.find(bb => bb.b === x.b && bb.sec === p.sec);
+    const b = ev.boards.find(bb => bb.b === x.b && bb.sec === p.sec) || ev.boards.find(bb => bb.b === x.b);  // bölümler aynı elleri paylaşıyorsa eller tek bölümde saklı
     const r = b && x.row != null ? b.rows[x.row] : null;
     const side = x.side || (p.dir === 'EW' ? 'ew' : 'ns');
     const mySeats = side === 'ns' ? 'NS' : 'EW';
