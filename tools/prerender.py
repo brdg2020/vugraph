@@ -128,7 +128,7 @@ urls = []
 today = date.today().isoformat()
 
 # --- uygulama kabuğu (diğer yollar)
-write("app.html", page("", "briçskor — Kulüp briç turnuva sonuçları", "Briç kulüplerinin turnuva sonuçları.",
+write("app.html", page("", "Briç Kulüp Skorları – Güncel Turnuva Sonuçları", "Briç kulüplerinin turnuva sonuçları.",
                        '<div class="loading">Yükleniyor…</div>', index=False))
 
 # --- ana sayfa
@@ -184,7 +184,7 @@ home = ('<h1>Kulüp turnuva sonuçları</h1><p class="sub">Sıralama, eller, dou
         + clubs_markup
         + '<h2>Son turnuvalar</h2><div class="card evlist">' + "".join(ev_row(x["club"], x, x["label"]) for x in latest) + "</div>")
 names = ", ".join(c.get("short") or c["name"] for c in clubs)
-write("index.html", page("/", "briçskor — Briç kulüp skorları ve turnuva sonuçları",
+write("index.html", page("/", "Briç Kulüp Skorları – Güncel Turnuva Sonuçları",
                          f"Briç kulüplerinin güncel turnuva skorları: {names}. Sıralama, eller, double dummy analizi ve eli oynama.",
                          home, index=True,
                          jsonld={"@context": "https://schema.org", "@type": "WebSite", "name": "briçskor", "url": SITE + "/"}))
@@ -222,7 +222,7 @@ for c in clubs:
             + '<details class="arsiv"><summary>Tüm turnuvalar</summary><div class="card evlist">'
             + "".join(ev_row(slug, x) for x in evs) + "</div></details>")
     short = c.get("short") or name
-    title = f"{brand(c)} Skorları – Güncel Turnuva Sonuçları | briçskor"
+    title = f"{brand(c)} Skorları – Güncel Turnuva Sonuçları"
     b_clean = re.sub(r"(?i)\s+briç.*$", "", short).strip()
     if evs:
         winner = " – ".join(evs[0].get("winner") or [])
@@ -249,7 +249,7 @@ for c in clubs:
                 f'<div class="card tbl-wrap"><table class="t"><thead><tr><th class="num">Sıra</th><th>Sporcu</th><th class="num">Güncel MP</th></tr></thead><tbody>{rows}</tbody></table></div>'
                 f'<p class="note">{e(mp.get("explanation"))} Kaynak: Türkiye Briç Federasyonu.</p>')
         short = c.get("short") or name
-        write(f"kulup/{slug}/mp-siralamasi.html", page(f"/kulup/{slug}/mp-siralamasi", f"{name} MP Sıralaması – TBF Güncel Masterpoint | briçskor",
+        write(f"kulup/{slug}/mp-siralamasi.html", page(f"/kulup/{slug}/mp-siralamasi", f"{name} MP Sıralaması – TBF Güncel Masterpoint",
               f"{short} sporcularının Türkiye Briç Federasyonu güncel masterpoint (MP) sıralaması: {len(mp['rows'])} sporcu.", body, index=bool(c.get("index"))))
         if c.get("index"):
             urls.append((f"/kulup/{slug}/mp-siralamasi", (mp.get("at") or today)[:10]))

@@ -48,7 +48,7 @@ async function mpIndex(club) {
   try { const mp = await getJSON(`/data/${club}/mp.json`); if (!mp._ix) { mp._ix = new Map(); mp.rows.forEach(r => mp._ix.set(normName(r[2]), r)); } return mp; } catch (e) { return null; }
 }
 
-function setTitle(t) { document.title = t ? `${t} · briçskor` : 'briçskor — Kulüp briç turnuva sonuçları'; }
+function setTitle(t) { document.title = t || 'Briç Kulüp Skorları – Güncel Turnuva Sonuçları'; }
 
 // ---------- bridge helpers
 function vulOf(vul, seat) { return vul === 'Both' || (vul === 'NS' && 'NS'.includes(seat)) || (vul === 'EW' && 'EW'.includes(seat)); }
