@@ -268,9 +268,9 @@ for c in clubs:
               "eventStatus": "https://schema.org/EventScheduled",
               "location": {"@type": "Place", "name": name, "address": {"@type": "PostalAddress", "addressCountry": "TR"}},
               "organizer": {"@type": "SportsOrganization", "name": name, "url": f"{SITE}/kulup/{slug}"}}
-        write(f"kulup/{slug}/{ev['slug']}.html", page(f"/kulup/{slug}/{ev['slug']}", title, desc, body, index=bool(c.get("index")), jsonld=ld))
-        if c.get("index"):
-            urls.append((f"/kulup/{slug}/{ev['slug']}", ev["date"]))
+        # Tekil turnuva sayfaları Google'a kapalı (noindex, follow) ve sitemap'e eklenmez;
+        # yalnızca kulüp sayfaları, MP sıralamaları ve ana sayfa dizine açıktır.
+        write(f"kulup/{slug}/{ev['slug']}.html", page(f"/kulup/{slug}/{ev['slug']}", title, desc, body, index=False, jsonld=ld))
 
 write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
       + "".join(f"  <url><loc>{SITE}{u}</loc><lastmod>{d}</lastmod></url>\n" for u, d in urls) + "</urlset>\n")
