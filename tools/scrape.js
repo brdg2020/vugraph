@@ -3,7 +3,7 @@
 // Node'da: node tools/scrape_cli.mjs (GitHub Actions). Yalnızca skor.bricdersi.net'te henüz olmayan turnuvaları çeker, sonucu
 // bricskor_update_<tarih>.json olarak indirir. Dosya: {"<kulüp>": {"<id>": olay}}
 window.bricskorScrape = async function (clubs, opts = {}) {
-  const months = opts.months || 2, workers = opts.workers || 4, force = opts.force || false;
+  const months = opts.months || 2, workers = opts.workers || 4, force = opts.force || false, days = opts.days;
   const dec = new TextDecoder('windows-1254');
   const get = async u => { for (let k = 0; k < 3; k++) { try { const r = await fetch(u, { signal: AbortSignal.timeout(8000) }); return new DOMParser().parseFromString(dec.decode(await r.arrayBuffer()), 'text/html'); } catch (e) { await new Promise(s => setTimeout(s, 800)); } } throw new Error('fail ' + u); };
   const tx = e => e ? (e.textContent || '').replace(/\s+/g, ' ').trim() : '';
@@ -55,18 +55,48 @@ window.bricskorScrape = async function (clubs, opts = {}) {
     return { id, title, pairs, boards, hints };
   }
   const now = new Date(); const out = {}; const jobs = []; const log = []; let takvim = 0;
+  let targetDatesByMonth = null;
+  if (days && days > 0) {
+    targetDatesByMonth = {};
+    for (let d = 0; d < days; d++) {
+      const dt = new Date(Date.now() - d * 86400000);
+      const s = dt.toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+      const [y, m, dayNum] = s.split('-').map(Number);
+      const key = `${y}-${m}`;
+      (targetDatesByMonth[key] ||= { year: y, month: m, days: new Set() }).days.add(dayNum);
+    }
+  }
+
   for (const club of clubs) {
     out[club] = {};
     let known = new Set();
     if (opts.known) known = new Set((opts.known[club] || []).map(String));
     else if (!force) { try { const idx = await (await fetch('https://skor.bricdersi.net/data/' + club + '/index.json', { cache: 'no-store' })).json(); known = new Set(idx.events.map(e => String(e.id))); } catch (e) { log.push(club + ': mevcut liste alınamadı'); } }
-    for (let k = 0; k < months; k++) {
-      const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
-      const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
-      const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
-      ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
-      takvim += ids.length;
-      log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
+
+    if (targetDatesByMonth) {
+      for (const t of Object.values(targetDatesByMonth)) {
+        const cal = await get('/' + club + '/calendar.php?month=' + t.month + '&year=' + t.year);
+        const dayCells = cal.querySelectorAll('td.days');
+        for (const td of dayCells) {
+          const d2 = td.querySelector('.days2');
+          const dayNum = +(d2 ? d2.textContent.trim() : td.textContent.trim());
+          if (t.days.has(dayNum)) {
+            const ids = [...new Set([...td.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
+            ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+            takvim += ids.length;
+          }
+        }
+        log.push(club + ' son ' + days + ' gün (' + t.month + '/' + t.year + ') tarandı');
+      }
+    } else {
+      for (let k = 0; k < months; k++) {
+        const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
+        const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
+        const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
+        ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+        takvim += ids.length;
+        log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
+      }
     }
   }
   let uniq = [...new Map(jobs.map(j => [j.join(':'), j])).values()];
