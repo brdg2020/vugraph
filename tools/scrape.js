@@ -5,7 +5,7 @@
 window.bricskorScrape = async function (clubs, opts = {}) {
   const months = opts.months || 2, workers = opts.workers || 4, force = opts.force || false, days = opts.days;
   const dec = new TextDecoder('windows-1254');
-  const get = async u => { for (let k = 0; k < 3; k++) { try { const r = await fetch(u, { signal: AbortSignal.timeout(8000) }); return new DOMParser().parseFromString(dec.decode(await r.arrayBuffer()), 'text/html'); } catch (e) { await new Promise(s => setTimeout(s, 800)); } } throw new Error('fail ' + u); };
+  const get = async u => { for (let k = 0; k < 4; k++) { try { const r = await fetch(u, { signal: AbortSignal.timeout(15000) }); return new DOMParser().parseFromString(dec.decode(await r.arrayBuffer()), 'text/html'); } catch (e) { await new Promise(s => setTimeout(s, 1000 * (k + 1))); } } throw new Error('fail ' + u); };
   const tx = e => e ? (e.textContent || '').replace(/\s+/g, ' ').trim() : '';
   const suit = c => { const im = c.querySelector('img'); return im ? (im.getAttribute('alt') || '').toUpperCase()[0] : ''; };
   const parseHand = cell => ({ name: tx(cell.querySelector('.isim')), cards: cell.innerHTML.split(/<img[^>]*>/i).slice(1).map(p => p.replace(/<br>/gi, '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '').trim()).slice(0, 4).map(p => p.replace(/\s/g, '').replace(/^(-|—)$/, '')) });
@@ -75,27 +75,35 @@ window.bricskorScrape = async function (clubs, opts = {}) {
 
     if (targetDatesByMonth) {
       for (const t of Object.values(targetDatesByMonth)) {
-        const cal = await get('/' + club + '/calendar.php?month=' + t.month + '&year=' + t.year);
-        const dayCells = cal.querySelectorAll('td.days');
-        for (const td of dayCells) {
-          const d2 = td.querySelector('.days2');
-          const dayNum = +(d2 ? d2.textContent.trim() : td.textContent.trim());
-          if (t.days.has(dayNum)) {
-            const ids = [...new Set([...td.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
-            ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
-            takvim += ids.length;
+        try {
+          const cal = await get('/' + club + '/calendar.php?month=' + t.month + '&year=' + t.year);
+          const dayCells = cal.querySelectorAll('td.days');
+          for (const td of dayCells) {
+            const d2 = td.querySelector('.days2');
+            const dayNum = +(d2 ? d2.textContent.trim() : td.textContent.trim());
+            if (t.days.has(dayNum)) {
+              const ids = [...new Set([...td.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
+              ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+              takvim += ids.length;
+            }
           }
+          log.push(club + ' son ' + days + ' gün (' + t.month + '/' + t.year + ') tarandı');
+        } catch (e) {
+          log.push(club + ' ' + t.month + '/' + t.year + ': takvim alınamadı (' + e.message + ')');
         }
-        log.push(club + ' son ' + days + ' gün (' + t.month + '/' + t.year + ') tarandı');
       }
     } else {
       for (let k = 0; k < months; k++) {
         const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
-        const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
-        const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
-        ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
-        takvim += ids.length;
-        log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
+        try {
+          const cal = await get('/' + club + '/calendar.php?month=' + (dt.getMonth() + 1) + '&year=' + dt.getFullYear());
+          const ids = [...new Set([...cal.querySelectorAll('a')].map(a => ((a.getAttribute('href') || '').match(/event.(\d+)/) || [])[1]).filter(Boolean))];
+          ids.filter(id => !known.has(id)).forEach(id => jobs.push([club, +id]));
+          takvim += ids.length;
+          log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvimde ' + ids.length + ' turnuva');
+        } catch (e) {
+          log.push(club + ' ' + (dt.getMonth() + 1) + '/' + dt.getFullYear() + ': takvim alınamadı (' + e.message + ')');
+        }
       }
     }
   }
