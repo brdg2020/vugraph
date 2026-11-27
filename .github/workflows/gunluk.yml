@@ -77,8 +77,12 @@ jobs:
           EN_COK: ${{ github.event.inputs.en_cok || '60' }}
         run: node tools/scrape_cli.mjs /tmp/update.json ${{ github.event.inputs.months || '2d' }}
 
-      - name: TBF MP sıralaması
-        run: python3 tools/tbf.py
+      - name: TBF MP sıralaması (yalnız pazartesi ve perşembe; ~3 dk sürüyor, Actions kotası için)
+        run: |
+          case "$(TZ=Europe/Istanbul date +%u)" in
+            1|4) python3 tools/tbf.py ;;
+            *) echo "TBF bugün atlandı; son sıralama kullanılıyor." ;;
+          esac
 
       - name: Siteyi üret
         run: |

@@ -60,7 +60,7 @@ python3 tools/serve.py public          # http://127.0.0.1:8088
 firebase deploy --only hosting --project bricskor
 ```
 
-Firebase: `erdembridge1@gmail.com` hesabı, proje `bricskor`, alan adı `skor.bricdersi.net` (Squarespace DNS'te CNAME `skor` → `bricskor.web.app`).
+Firebase: proje `bricskor`, alan adı `skor.bricdersi.net` (Squarespace DNS'te CNAME `skor` → `bricskor.web.app`).
 
 Kulüp ve turnuva sayfaları Google'a açık; el, oyuncu ve gömülü (`/embed`) sayfalar `noindex`. Yayından sonra `sitemap.xml` Google Search Console'a gönderilmeli.
 
